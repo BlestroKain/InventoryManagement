@@ -15,32 +15,26 @@ namespace InventoryApp
             pointOfSale = new PointOfSale();
             CartManager cartManager = new CartManager();
 
-            label3.Text = totalPrice.ToString();
+            SubtotalLbl.Text = totalPrice.ToString();
 
-            pointOfSale.InitializeComboBox(comboBox1);
-            pointOfSale.CalculateDiscount(label3.Text, comboBox1.SelectedItem, label7, label8);
+            pointOfSale.InitializeComboBox(DiscountCmb);
+            pointOfSale.CalculateDiscount(SubtotalLbl.Text, DiscountCmb.SelectedItem, DiscountLbl, TotalLbl);
             cartManager.LoadCartItems(listBox1);
         }
 
         // ON TEXT CHANGED
         public void ChangeEventHandler()
         {
-            if (decimal.TryParse(textBox2.Text, out _))
+            if (decimal.TryParse(CashTxt.Text, out _))
             {
-                pointOfSale.CalculateChange(label8, textBox2, label10);
+                pointOfSale.CalculateChange(TotalLbl, CashTxt, ChangeLbl);
             }
         }
 
         // COMBOBOX EVENT
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
-            pointOfSale.CalculateDiscount(label3.Text, comboBox1.SelectedItem, label7, label8);
-        }
-
-        private void comboBox1_TextChanged(object sender, EventArgs e)
-        {
-            // TODO: not working
-            pointOfSale.CalculateDiscount(label3.Text, comboBox1.SelectedItem, label7, label8);
+            pointOfSale.CalculateDiscount(SubtotalLbl.Text, DiscountCmb.SelectedItem, DiscountLbl, TotalLbl);
         }
 
         // TEXTBOX EVENT
@@ -58,14 +52,11 @@ namespace InventoryApp
         // INSERT STOCK BUTTON
         private void button1_Click(object sender, EventArgs e)
         {
-            TransactionManager transactionManager = new TransactionManager();
             TransactionIdGenerator transactionIdGenerator = new TransactionIdGenerator();
-
             string transactionId = transactionIdGenerator.GenerateTransactionId();
 
-            if (pointOfSale.ProcessTransaction(label3.Text, textBox2.Text, comboBox1.SelectedItem, transactionId))
+            if (pointOfSale.ProcessTransaction(SubtotalLbl.Text, CashTxt.Text, DiscountCmb.SelectedItem, transactionId, listBox1))
             {
-                transactionManager.InsertTransactionItems(listBox1, transactionId);
                 DialogResult = DialogResult.OK;
             }
         }

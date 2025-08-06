@@ -29,31 +29,31 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            this.textBox1 = new System.Windows.Forms.TextBox();
+            this.NameTxt = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
-            this.textBox2 = new System.Windows.Forms.TextBox();
+            this.PriceTxt = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
-            this.textBox3 = new System.Windows.Forms.TextBox();
+            this.StockTxt = new System.Windows.Forms.TextBox();
             this.label3 = new System.Windows.Forms.Label();
-            this.textBox4 = new System.Windows.Forms.TextBox();
+            this.UnitTxt = new System.Windows.Forms.TextBox();
             this.label4 = new System.Windows.Forms.Label();
-            this.comboBox1 = new System.Windows.Forms.ComboBox();
+            this.CategoryCmb = new System.Windows.Forms.ComboBox();
             this.label5 = new System.Windows.Forms.Label();
-            this.button1 = new System.Windows.Forms.Button();
-            this.button2 = new System.Windows.Forms.Button();
+            this.Savebtn = new System.Windows.Forms.Button();
+            this.CancelBtn = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.errorProvider1 = new System.Windows.Forms.ErrorProvider(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.errorProvider1)).BeginInit();
             this.SuspendLayout();
             // 
-            // textBox1
+            // NameTxt
             // 
-            this.textBox1.Location = new System.Drawing.Point(78, 44);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(274, 20);
-            this.textBox1.TabIndex = 0;
-            this.textBox1.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.textBox1_KeyPress);
-            this.textBox1.Validating += new System.ComponentModel.CancelEventHandler(this.textBox1_Validating);
+            this.NameTxt.Location = new System.Drawing.Point(78, 44);
+            this.NameTxt.Name = "NameTxt";
+            this.NameTxt.Size = new System.Drawing.Size(274, 20);
+            this.NameTxt.TabIndex = 0;
+            this.NameTxt.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.textBox1_KeyPress);
+  
             // 
             // label1
             // 
@@ -64,14 +64,14 @@
             this.label1.TabIndex = 1;
             this.label1.Text = "Name";
             // 
-            // textBox2
+            // PriceTxt
             // 
-            this.textBox2.Location = new System.Drawing.Point(78, 89);
-            this.textBox2.Name = "textBox2";
-            this.textBox2.Size = new System.Drawing.Size(274, 20);
-            this.textBox2.TabIndex = 2;
-            this.textBox2.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.textBox2_KeyPress);
-            this.textBox2.Validating += new System.ComponentModel.CancelEventHandler(this.textBox2_Validating);
+            this.PriceTxt.Location = new System.Drawing.Point(78, 89);
+            this.PriceTxt.Name = "PriceTxt";
+            this.PriceTxt.Size = new System.Drawing.Size(274, 20);
+            this.PriceTxt.TabIndex = 2;
+            this.PriceTxt.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.textBox2_KeyPress);
+        
             // 
             // label2
             // 
@@ -82,14 +82,14 @@
             this.label2.TabIndex = 3;
             this.label2.Text = "Price";
             // 
-            // textBox3
+            // StockTxt
             // 
-            this.textBox3.Location = new System.Drawing.Point(78, 132);
-            this.textBox3.Name = "textBox3";
-            this.textBox3.Size = new System.Drawing.Size(274, 20);
-            this.textBox3.TabIndex = 4;
-            this.textBox3.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.textBox3_KeyPress);
-            this.textBox3.Validating += new System.ComponentModel.CancelEventHandler(this.textBox3_Validating);
+            this.StockTxt.Location = new System.Drawing.Point(78, 132);
+            this.StockTxt.Name = "StockTxt";
+            this.StockTxt.Size = new System.Drawing.Size(274, 20);
+            this.StockTxt.TabIndex = 4;
+            this.StockTxt.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.textBox3_KeyPress);
+
             // 
             // label3
             // 
@@ -100,14 +100,14 @@
             this.label3.TabIndex = 5;
             this.label3.Text = "Stock";
             // 
-            // textBox4
+            // UnitTxt
             // 
-            this.textBox4.Location = new System.Drawing.Point(78, 174);
-            this.textBox4.Name = "textBox4";
-            this.textBox4.Size = new System.Drawing.Size(274, 20);
-            this.textBox4.TabIndex = 6;
-            this.textBox4.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.textBox4_KeyPress);
-            this.textBox4.Validating += new System.ComponentModel.CancelEventHandler(this.textBox4_Validating);
+            this.UnitTxt.Location = new System.Drawing.Point(78, 174);
+            this.UnitTxt.Name = "UnitTxt";
+            this.UnitTxt.Size = new System.Drawing.Size(274, 20);
+            this.UnitTxt.TabIndex = 6;
+            this.UnitTxt.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.textBox4_KeyPress);
+    
             // 
             // label4
             // 
@@ -118,15 +118,15 @@
             this.label4.TabIndex = 7;
             this.label4.Text = "Unit";
             // 
-            // comboBox1
+            // CategoryCmb
             // 
-            this.comboBox1.FormattingEnabled = true;
-            this.comboBox1.Location = new System.Drawing.Point(78, 219);
-            this.comboBox1.Name = "comboBox1";
-            this.comboBox1.Size = new System.Drawing.Size(274, 21);
-            this.comboBox1.TabIndex = 8;
-            this.comboBox1.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.comboBox1_KeyPress);
-            this.comboBox1.Validating += new System.ComponentModel.CancelEventHandler(this.comboBox1_Validating);
+            this.CategoryCmb.FormattingEnabled = true;
+            this.CategoryCmb.Location = new System.Drawing.Point(78, 219);
+            this.CategoryCmb.Name = "CategoryCmb";
+            this.CategoryCmb.Size = new System.Drawing.Size(274, 21);
+            this.CategoryCmb.TabIndex = 8;
+            this.CategoryCmb.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.comboBox1_KeyPress);
+
             // 
             // label5
             // 
@@ -137,25 +137,27 @@
             this.label5.TabIndex = 9;
             this.label5.Text = "Category";
             // 
-            // button1
+            // Savebtn
             // 
-            this.button1.Location = new System.Drawing.Point(52, 282);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(111, 41);
-            this.button1.TabIndex = 10;
-            this.button1.Text = "SAVE";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
+            this.Savebtn.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(255)))), ((int)(((byte)(128)))));
+            this.Savebtn.Location = new System.Drawing.Point(52, 282);
+            this.Savebtn.Name = "Savebtn";
+            this.Savebtn.Size = new System.Drawing.Size(111, 41);
+            this.Savebtn.TabIndex = 10;
+            this.Savebtn.Text = "GUARDAR";
+            this.Savebtn.UseVisualStyleBackColor = false;
+            this.Savebtn.Click += new System.EventHandler(this.button1_Click);
             // 
-            // button2
+            // CancelBtn
             // 
-            this.button2.Location = new System.Drawing.Point(225, 282);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(111, 41);
-            this.button2.TabIndex = 11;
-            this.button2.Text = "CANCEL";
-            this.button2.UseVisualStyleBackColor = true;
-            this.button2.Click += new System.EventHandler(this.button2_Click);
+            this.CancelBtn.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
+            this.CancelBtn.Location = new System.Drawing.Point(225, 282);
+            this.CancelBtn.Name = "CancelBtn";
+            this.CancelBtn.Size = new System.Drawing.Size(111, 41);
+            this.CancelBtn.TabIndex = 11;
+            this.CancelBtn.Text = "CANCELAR";
+            this.CancelBtn.UseVisualStyleBackColor = false;
+            this.CancelBtn.Click += new System.EventHandler(this.button2_Click);
             // 
             // groupBox1
             // 
@@ -176,18 +178,18 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(393, 368);
             this.ControlBox = false;
-            this.Controls.Add(this.button2);
-            this.Controls.Add(this.button1);
+            this.Controls.Add(this.CancelBtn);
+            this.Controls.Add(this.Savebtn);
             this.Controls.Add(this.label5);
-            this.Controls.Add(this.comboBox1);
+            this.Controls.Add(this.CategoryCmb);
             this.Controls.Add(this.label4);
-            this.Controls.Add(this.textBox4);
+            this.Controls.Add(this.UnitTxt);
             this.Controls.Add(this.label3);
-            this.Controls.Add(this.textBox3);
+            this.Controls.Add(this.StockTxt);
             this.Controls.Add(this.label2);
-            this.Controls.Add(this.textBox2);
+            this.Controls.Add(this.PriceTxt);
             this.Controls.Add(this.label1);
-            this.Controls.Add(this.textBox1);
+            this.Controls.Add(this.NameTxt);
             this.Controls.Add(this.groupBox1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.Name = "ProductDialog";
@@ -202,18 +204,18 @@
 
         #endregion
 
-        private System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.TextBox NameTxt;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.TextBox textBox2;
+        private System.Windows.Forms.TextBox PriceTxt;
         private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.TextBox textBox3;
+        private System.Windows.Forms.TextBox StockTxt;
         private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.TextBox textBox4;
+        private System.Windows.Forms.TextBox UnitTxt;
         private System.Windows.Forms.Label label4;
-        private System.Windows.Forms.ComboBox comboBox1;
+        private System.Windows.Forms.ComboBox CategoryCmb;
         private System.Windows.Forms.Label label5;
-        private System.Windows.Forms.Button button1;
-        private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.Button Savebtn;
+        private System.Windows.Forms.Button CancelBtn;
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.ErrorProvider errorProvider1;
     }

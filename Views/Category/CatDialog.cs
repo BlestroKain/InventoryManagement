@@ -1,63 +1,104 @@
 ﻿using System;
-using InventoryApp.Data;
+using System.ComponentModel;
+using System.Data;
 using System.Windows.Forms;
+using InventoryApp.Data;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace InventoryApp
 {
     public partial class CatDialog : Form
     {
         private readonly CategoryManager categoryManager;
-        private readonly int itemId;
+        private readonly int itemId; // 0 = create, >0 = edit
 
         public CatDialog(CategoryManager manager)
         {
             InitializeComponent();
-            categoryManager = manager;
-
+            categoryManager = manager ?? throw new ArgumentNullException(nameof(manager));
+            itemId = 0;
             Text = "Add New Category";
+
+            textBox2.Validating += textBox2_Validating;
         }
 
-        // Constructor for Edit mode - Cat
+        // Edit mode
         public CatDialog(CategoryManager manager, int id, string categoryItem)
         {
             InitializeComponent();
-            categoryManager = manager;
+            categoryManager = manager ?? throw new ArgumentNullException(nameof(manager));
             itemId = id;
-            textBox2.Text = categoryItem;
-
             Text = "Edit Category";
+
+            textBox2.Text = categoryItem ?? "";
+            textBox2.Validating += textBox2_Validating;
         }
 
-        // Save Category and Validate
-        private void SaveCategory()
+        // Validates input and duplicates
+        private bool ValidateAll()
         {
-            if (!string.IsNullOrEmpty(textBox2.Text))
-            {
-                if (itemId == 0) // Create mode
-                {
-                    categoryManager.AddCategory(textBox2.Text);
-                }
-                else // Edit mode
-                {
-                    categoryManager.UpdateCategory(itemId, textBox2.Text);
-                }
+            errorProvider1.Clear();
+            var name = textBox2.Text.Trim();
 
-                DialogResult = DialogResult.OK;
-                Close();
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                errorProvider1.SetError(textBox2, "Category name is required.");
+                return false;
+            }
+
+            // Check duplicates
+            var dt = categoryManager.GetCategories();
+            foreach (DataRow row in dt.Rows)
+            {
+                var existingName = row["CategoryItem"]?.ToString();
+                var existingId = Convert.ToInt32(row["Id"]);
+                if (string.Equals(existingName, name, StringComparison.OrdinalIgnoreCase)
+                    && (itemId == 0 || existingId != itemId))
+                {
+                    errorProvider1.SetError(textBox2, "This category already exists.");
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private void textBox2_Validating(object sender, CancelEventArgs e)
+        {
+            // simple non-empty check on leave
+            if (string.IsNullOrWhiteSpace(textBox2.Text))
+            {
+                errorProvider1.SetError(textBox2, "Category name is required.");
+                e.Cancel = true;
             }
             else
             {
-                errorProvider1.SetError(textBox2, "Category name is required.");
+                errorProvider1.SetError(textBox2, "");
+                e.Cancel = false;
             }
         }
 
-        // SAVE or UPDATE BUTTON - Cat
-        private void button1_Click(object sender, EventArgs e)
+        // SAVE or UPDATE
+        private void SaveCategory()
         {
-            SaveCategory();
+            if (!ValidateAll()) return;
+
+            var name = textBox2.Text.Trim();
+            if (itemId == 0)
+            {
+                categoryManager.AddCategory(name);
+            }
+            else
+            {
+                categoryManager.UpdateCategory(itemId, name);
+            }
+
+            DialogResult = DialogResult.OK;
+            Close();
         }
 
-        // [ ENTER ] Keypress to save
+        private void button1_Click(object sender, EventArgs e) => SaveCategory();
+
         private void textBox2_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (e.KeyChar == (char)Keys.Enter)
@@ -67,9 +108,9 @@ namespace InventoryApp
             }
         }
 
-        // CANCEL BUTTON - Cat
         private void button2_Click(object sender, EventArgs e)
         {
+            errorProvider1.Clear();
             Close();
         }
     }

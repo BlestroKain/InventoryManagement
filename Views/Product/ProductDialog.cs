@@ -1,215 +1,183 @@
 ﻿using System;
-using InventoryApp.Data;
+using System.ComponentModel;
 using System.Windows.Forms;
+using InventoryApp.Data;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace InventoryApp
 {
     public partial class ProductDialog : Form
     {
         private readonly ProductManager productManager;
-        private readonly int itemId; // Used for Edit mode
+        private readonly int itemId; // 0 = nuevo, >0 = editar
 
+        // Constructor para crear
         public ProductDialog(ProductManager manager)
         {
             InitializeComponent();
-            productManager = manager;
+            productManager = manager ?? throw new ArgumentNullException(nameof(manager));
+            itemId = 0;
 
-            // ComboBox Item
-            comboBox1.Items.AddRange(productManager.GetCategoryItems());
+            // Primero cargo categorías
+            CategoryCmb.Items.Clear();
+            CategoryCmb.Items.AddRange(productManager.GetCategoryItems());
 
-            // Set form title for Create mode
             Text = "Add New Product";
         }
 
-        // Constructor for Edit mode
-        public ProductDialog(ProductManager manager, int id, string name, int price, int stock, int unit, string category)
+        // Constructor para editar
+        public ProductDialog(
+            ProductManager manager,
+            int id,
+            string name,
+            int price,
+            int stock,
+            int unit,
+            string category
+        )
         {
             InitializeComponent();
-            productManager = manager;
+            productManager = manager ?? throw new ArgumentNullException(nameof(manager));
             itemId = id;
 
-            textBox1.Text = name;
-            textBox2.Text = price.ToString();
-            textBox3.Text = stock.ToString();
-            textBox4.Text = unit.ToString();
-            comboBox1.Text = category;
+            // Primero cargo categorías
+            CategoryCmb.Items.Clear();
+            CategoryCmb.Items.AddRange(productManager.GetCategoryItems());
 
-            // ComboBox Items
-            comboBox1.Items.AddRange(productManager.GetCategoryItems());
+            // Luego asigno valores a los controles
+            NameTxt.Text = name ?? "";
+            PriceTxt.Text = price.ToString();
+            StockTxt.Text = stock.ToString();
+            UnitTxt.Text = unit.ToString();
 
-            // Set form title for Edit mode
+            // Selecciono la categoría si existe, sino dejo el texto
+            if (CategoryCmb.Items.Contains(category))
+            {
+                CategoryCmb.SelectedItem = category;
+            }
+            else
+            {
+                CategoryCmb.Text = category ?? "";
+            }
+
             Text = "Edit Product";
         }
 
-        // Save Product
-        private void SaveProduct()
+        // Validación sencilla de que todos los campos estén completos y numéricos
+        private bool ValidateAll()
         {
-            string selectedItem = comboBox1.Text.Trim();
-            if (!string.IsNullOrEmpty(selectedItem) && comboBox1.SelectedIndex == -1)
+            errorProvider1.Clear();
+            bool ok = true;
+
+            if (string.IsNullOrWhiteSpace(NameTxt.Text))
             {
-                productManager.InsertCategory(selectedItem);
+                errorProvider1.SetError(NameTxt, "Product name is required.");
+                ok = false;
+            }
+            if (!int.TryParse(PriceTxt.Text, out _))
+            {
+                errorProvider1.SetError(PriceTxt, "Price must be a number.");
+                ok = false;
+            }
+            if (!int.TryParse(StockTxt.Text, out _))
+            {
+                errorProvider1.SetError(StockTxt, "Stock must be a number.");
+                ok = false;
+            }
+            if (!int.TryParse(UnitTxt.Text, out _))
+            {
+                errorProvider1.SetError(UnitTxt, "Unit must be a number.");
+                ok = false;
+            }
+            if (string.IsNullOrWhiteSpace(CategoryCmb.Text))
+            {
+                errorProvider1.SetError(CategoryCmb, "Category is required.");
+                ok = false;
             }
 
-            if (itemId == 0) // Create mode
+            return ok;
+        }
+
+        // Guarda o actualiza el producto
+        private void SaveProduct()
+        {
+            if (!ValidateAll()) return;
+
+            var name = NameTxt.Text.Trim();
+            var price = Convert.ToInt32(PriceTxt.Text);
+            var stock = Convert.ToInt32(StockTxt.Text);
+            var unit = Convert.ToInt32(UnitTxt.Text);
+            var category = CategoryCmb.Text.Trim();
+
+            // Si es categoría nueva, la inserto
+            if (CategoryCmb.SelectedIndex == -1)
             {
-                productManager.InsertProduct(textBox1.Text, Convert.ToInt32(textBox2.Text), Convert.ToInt32(textBox3.Text), Convert.ToInt32(textBox4.Text), comboBox1.Text);
+                productManager.InsertCategory(category);
             }
-            else // Edit mode
+
+            if (itemId == 0)
             {
-                productManager.UpdateProduct(itemId, textBox1.Text, Convert.ToInt32(textBox2.Text), Convert.ToInt32(textBox3.Text), Convert.ToInt32(textBox4.Text), comboBox1.Text);
+                productManager.InsertProduct(name, price, stock, unit, category);
+            }
+            else
+            {
+                productManager.UpdateProduct(itemId, name, price, stock, unit, category);
             }
 
             DialogResult = DialogResult.OK;
             Close();
         }
 
-        // SAVE or UPDATE BUTTON
-        private void button1_Click(object sender, EventArgs e)
-        {
-            SaveProduct();
-        }
+        private void button1_Click(object sender, EventArgs e) => SaveProduct();
 
-        // CANCEL BUTTON
         private void button2_Click(object sender, EventArgs e)
         {
-            errorProvider1.SetError(textBox1, "");
-            errorProvider1.SetError(textBox2, "");
-            errorProvider1.SetError(textBox3, "");
-            errorProvider1.SetError(textBox4, "");
-            errorProvider1.SetError(comboBox1, "");
             errorProvider1.Clear();
             Close();
         }
 
-        //Textbox key press event
-        #region
+        // Tecla Enter para avanzar formulario
         private void textBox1_KeyPress(object sender, KeyPressEventArgs e)
         {
-            if (!string.IsNullOrEmpty(textBox1.Text))
+            if (e.KeyChar == (char)Keys.Enter && !string.IsNullOrWhiteSpace(NameTxt.Text))
             {
-                if (e.KeyChar == (char)Keys.Enter)
-                {
-                    textBox2.Focus();
-                    e.Handled = true;
-                }
+                PriceTxt.Focus();
+                e.Handled = true;
             }
         }
-
         private void textBox2_KeyPress(object sender, KeyPressEventArgs e)
         {
-            if (!string.IsNullOrEmpty(textBox2.Text))
+            if (e.KeyChar == (char)Keys.Enter && !string.IsNullOrWhiteSpace(PriceTxt.Text))
             {
-                if (e.KeyChar == (char)Keys.Enter)
-                {
-                    textBox3.Focus();
-                    e.Handled = true;
-                }
+                StockTxt.Focus();
+                e.Handled = true;
             }
         }
-
         private void textBox3_KeyPress(object sender, KeyPressEventArgs e)
         {
-            if (!string.IsNullOrEmpty(textBox3.Text))
+            if (e.KeyChar == (char)Keys.Enter && !string.IsNullOrWhiteSpace(StockTxt.Text))
             {
-                if (e.KeyChar == (char)Keys.Enter)
-                {
-                    textBox4.Focus();
-                    e.Handled = true;
-                }
+                UnitTxt.Focus();
+                e.Handled = true;
             }
         }
-
         private void textBox4_KeyPress(object sender, KeyPressEventArgs e)
         {
-            if (!string.IsNullOrEmpty(textBox4.Text))
+            if (e.KeyChar == (char)Keys.Enter && !string.IsNullOrWhiteSpace(UnitTxt.Text))
             {
-                if (e.KeyChar == (char)Keys.Enter)
-                {
-                    comboBox1.Focus();
-                    e.Handled = true;
-                }
+                CategoryCmb.Focus();
+                e.Handled = true;
             }
         }
-
         private void comboBox1_KeyPress(object sender, KeyPressEventArgs e)
         {
-            if (!string.IsNullOrEmpty(comboBox1.Text))
+            if (e.KeyChar == (char)Keys.Enter && !string.IsNullOrWhiteSpace(CategoryCmb.Text))
             {
-                if (e.KeyChar == (char)Keys.Enter)
-                {
-                    SaveProduct();
-                    e.Handled = true;
-                }
-            }
-        }
-        #endregion
-
-        //Texbox validations
-        #region
-        private void textBox1_Validating(object sender, System.ComponentModel.CancelEventArgs e)
-        {
-            if (string.IsNullOrEmpty(textBox1.Text))
-            {
-                errorProvider1.SetError(textBox1, "Product name is required.");
-            }
-            else
-            {
-                errorProvider1.SetError(textBox1, "");
-                //errorProvider1.Clear();
+                SaveProduct();
+                e.Handled = true;
             }
         }
 
-        private void textBox3_Validating(object sender, System.ComponentModel.CancelEventArgs e)
-        {
-            if (string.IsNullOrEmpty(textBox3.Text))
-            {
-                errorProvider1.SetError(textBox3, "Price is required.");
-            }
-            else
-            {
-                errorProvider1.SetError(textBox3, "");
-                //errorProvider1.Clear();
-            }
-        }
-
-        private void textBox2_Validating(object sender, System.ComponentModel.CancelEventArgs e)
-        {
-            if (string.IsNullOrEmpty(textBox2.Text))
-            {
-                errorProvider1.SetError(textBox2, "Stock is required.");
-            }
-            else
-            {
-                errorProvider1.SetError(textBox2, "");
-                //errorProvider1.Clear();
-            }
-        }
-
-        private void textBox4_Validating(object sender, System.ComponentModel.CancelEventArgs e)
-        {
-            if (string.IsNullOrEmpty(textBox4.Text))
-            {
-                errorProvider1.SetError(textBox4, "Unit is required.");
-            }
-            else
-            {
-                errorProvider1.SetError(textBox4, "");
-                //errorProvider1.Clear();
-            }
-        }
-
-        private void comboBox1_Validating(object sender, System.ComponentModel.CancelEventArgs e)
-        {
-            if (string.IsNullOrEmpty(comboBox1.Text))
-            {
-                errorProvider1.SetError(comboBox1, "Category is required.");
-            }
-            else
-            {
-                errorProvider1.SetError(comboBox1, "");
-                //errorProvider1.Clear();
-            }
-        }
-        #endregion
+       
     }
 }
