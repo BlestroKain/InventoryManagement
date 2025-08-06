@@ -1,85 +1,88 @@
-﻿using System;
+﻿using Microsoft.Data.Sqlite;
+using System;
 using System.Data;
-using System.Data.SqlClient;
 using System.Collections.Generic;
 
 namespace InventoryApp.Data
 {
     public class ProductManager
     {
-        readonly SqlConnection con = ConnectionManager.GetConnection();
-
-        // Fetch data from Product
+        // 1) Obtener todos los productos
         public DataTable GetProducts()
         {
-            con.Open();
-            SqlCommand cmd = con.CreateCommand();
-            cmd.CommandType = CommandType.Text;
+            var con = ConnectionManager.GetConnection();
+            var cmd = con.CreateCommand();
             cmd.CommandText = "SELECT * FROM Product";
-            cmd.ExecuteNonQuery();
-            DataTable dt = new DataTable();
-            SqlDataAdapter da = new SqlDataAdapter(cmd);
-            da.Fill(dt);
-            con.Close();
+
+            var reader = cmd.ExecuteReader();
+            var dt = new DataTable();
+            dt.Load(reader);
             return dt;
         }
 
-        // Search Product
+        // 2) Buscar productos por nombre o categoría
         public DataTable SearchProducts(string searchTerm)
         {
-            con.Open();
-            DataTable dt = new DataTable("Customer");
+            var con = ConnectionManager.GetConnection();
+            var cmd = con.CreateCommand();
+            cmd.CommandText = @"
+                SELECT *
+                  FROM Product
+                 WHERE Name     LIKE @term
+                    OR Category LIKE @term";
+            cmd.Parameters.AddWithValue("@term", $"%{searchTerm}%");
 
-            using (SqlCommand cmd = new SqlCommand("SELECT * FROM Product WHERE Name LIKE '%' + @SearchTerm + '%' OR Category LIKE '%' + @SearchTerm + '%'", con))
-            {
-                cmd.Parameters.AddWithValue("@SearchTerm", "%" + searchTerm + "%");
-                SqlDataAdapter adapter = new SqlDataAdapter(cmd);
-                adapter.Fill(dt);
-            }
-
-            con.Close();
+            var reader = cmd.ExecuteReader();
+            var dt = new DataTable();
+            dt.Load(reader);
             return dt;
         }
 
-        // Fetch data from Category for ComboBox
+        // 3) Obtener categorías para ComboBox
         public string[] GetCategoryItems()
         {
-            con.Open();
-            SqlCommand cmd = new SqlCommand("SELECT CategoryItem FROM Category", con);
-            SqlDataReader reader = cmd.ExecuteReader();
-            var categoryItems = new List<string>();
+            var con = ConnectionManager.GetConnection();
+            var cmd = con.CreateCommand();
+            cmd.CommandText = "SELECT CategoryItem FROM Category";
+
+            var reader = cmd.ExecuteReader();
+            var list = new List<string>();
             while (reader.Read())
             {
-                categoryItems.Add(reader["CategoryItem"].ToString());
+                list.Add(reader.GetString(0));
             }
-            con.Close();
-
-            return categoryItems.ToArray();
+            return list.ToArray();
         }
 
-        // Add new Prodcut
+        // 4) Insertar un nuevo producto
         public void InsertProduct(string name, int price, int stock, int unit, string category)
         {
-            con.Open();
-            SqlCommand cmd = con.CreateCommand();
-            cmd.CommandType = CommandType.Text;
-            cmd.CommandText = "INSERT INTO Product (name, price, stock, unit, category) VALUES (@name, @price, @stock, @unit, @category)";
+            var con = ConnectionManager.GetConnection();
+            var cmd = con.CreateCommand();
+            cmd.CommandText = @"
+                INSERT INTO Product (Name, Price, Stock, Unit, Category)
+                VALUES (@name, @price, @stock, @unit, @category)";
             cmd.Parameters.AddWithValue("@name", name);
             cmd.Parameters.AddWithValue("@price", price);
             cmd.Parameters.AddWithValue("@stock", stock);
             cmd.Parameters.AddWithValue("@unit", unit);
             cmd.Parameters.AddWithValue("@category", category);
             cmd.ExecuteNonQuery();
-            con.Close();
         }
 
-        // Update Product
+        // 5) Actualizar un producto existente
         public void UpdateProduct(int id, string name, int price, int stock, int unit, string category)
         {
-            con.Open();
-            SqlCommand cmd = con.CreateCommand();
-            cmd.CommandType = CommandType.Text;
-            cmd.CommandText = "UPDATE Product SET name = @name, price = @price, stock = @stock, unit = @unit, category = @category WHERE Id = @id";
+            var con = ConnectionManager.GetConnection();
+            var cmd = con.CreateCommand();
+            cmd.CommandText = @"
+                UPDATE Product
+                   SET Name     = @name,
+                       Price    = @price,
+                       Stock    = @stock,
+                       Unit     = @unit,
+                       Category = @category
+                 WHERE Id       = @id";
             cmd.Parameters.AddWithValue("@name", name);
             cmd.Parameters.AddWithValue("@price", price);
             cmd.Parameters.AddWithValue("@stock", stock);
@@ -87,85 +90,82 @@ namespace InventoryApp.Data
             cmd.Parameters.AddWithValue("@category", category);
             cmd.Parameters.AddWithValue("@id", id);
             cmd.ExecuteNonQuery();
-            con.Close();
         }
 
-        // Delete Product
+        // 6) Eliminar un producto
         public void DeleteProduct(int id)
         {
-            con.Open();
-            SqlCommand cmd = con.CreateCommand();
-            cmd.CommandType = CommandType.Text;
-            cmd.CommandText = "DELETE FROM Product WHERE ID = @ID";
-            cmd.Parameters.AddWithValue("@ID", id);
+            var con = ConnectionManager.GetConnection();
+            var cmd = con.CreateCommand();
+            cmd.CommandText = "DELETE FROM Product WHERE Id = @id";
+            cmd.Parameters.AddWithValue("@id", id);
             cmd.ExecuteNonQuery();
-            con.Close();
         }
 
-        // Add new Category
+        // 7) Insertar una nueva categoría
         public void InsertCategory(string categoryItem)
         {
-            con.Open();
-            SqlCommand command = new SqlCommand("INSERT INTO Category (CategoryItem) VALUES (@categoryitem)", con);
-            command.Parameters.AddWithValue("@categoryitem", categoryItem);
-            command.ExecuteNonQuery();
-            con.Close();
+            var con = ConnectionManager.GetConnection();
+            var cmd = con.CreateCommand();
+            cmd.CommandText = "INSERT INTO Category (CategoryItem) VALUES (@categoryitem)";
+            cmd.Parameters.AddWithValue("@categoryitem", categoryItem);
+            cmd.ExecuteNonQuery();
         }
 
-        // Add item to the cart
+        // 8) Agregar un ítem al carrito (o actualizar cantidad si ya existe)
         public static bool AddItemToCart(string name, int price)
         {
-            using (SqlConnection con = ConnectionManager.GetConnection())
+            var con = ConnectionManager.GetConnection();
+
+            // 8.1) Verificar si ya está en el carrito para el usuario actual
+            var selectCmd = con.CreateCommand();
+            selectCmd.CommandText = @"
+                SELECT Quantity, Price
+                  FROM Cart
+                 WHERE Name = @name
+                   AND Uid  = @uid";
+            selectCmd.Parameters.AddWithValue("@name", name);
+            selectCmd.Parameters.AddWithValue("@uid", UserSession.SessionUID);
+
+            var reader = selectCmd.ExecuteReader();
+            if (reader.Read())
             {
-                con.Open();
-                string selectQuery = "SELECT Quantity, Price FROM Cart WHERE Name = @Name";
+                var existingQuantity = reader.GetInt32(0);
+                var existingPrice = reader.GetInt32(1);
+                var newQuantity = existingQuantity + 1;
+                reader.Close();
 
-                using (SqlCommand selectCommand = new SqlCommand(selectQuery, con))
-                {
-                    selectCommand.Parameters.AddWithValue("@Name", name);
-                    SqlDataReader reader = selectCommand.ExecuteReader();
+                var updateCmd = con.CreateCommand();
+                updateCmd.CommandText = @"
+                    UPDATE Cart
+                       SET Quantity = @quantity,
+                           Price    = @price
+                     WHERE Name     = @name
+                       AND Uid      = @uid";
+                updateCmd.Parameters.AddWithValue("@quantity", newQuantity);
+                updateCmd.Parameters.AddWithValue("@price", existingPrice);
+                updateCmd.Parameters.AddWithValue("@name", name);
+                updateCmd.Parameters.AddWithValue("@uid", UserSession.SessionUID);
+                updateCmd.ExecuteNonQuery();
+            }
+            else
+            {
+                reader.Close();
 
-                    if (reader.Read())
-                    {
-                        // Item already exists in the cart, update the quantity and price
-                        int existingQuantity = Convert.ToInt32(reader["Quantity"]);
-                        int existingPrice = Convert.ToInt32(reader["Price"]);
-                        int newQuantity = existingQuantity + 1;
-                        int newPrice = existingPrice;
-
-                        reader.Close();
-
-                        string updateQuery = "UPDATE Cart SET Quantity = @Quantity, Price = @Price WHERE Name = @Name";
-
-                        using (SqlCommand updateCommand = new SqlCommand(updateQuery, con))
-                        {
-                            updateCommand.Parameters.AddWithValue("@Quantity", newQuantity);
-                            updateCommand.Parameters.AddWithValue("@Price", newPrice);
-                            updateCommand.Parameters.AddWithValue("@Name", name);
-                            updateCommand.ExecuteNonQuery();
-                        }
-                    }
-                    else
-                    {
-                        reader.Close();
-
-                        // Item does not exist in the cart, insert a new row
-                        string insertQuery = "INSERT INTO Cart (ProductId, Uid, Name, Price, Quantity) " +
-                                             "VALUES ((SELECT Id FROM Product WHERE Name = @Name), @Uid, @Name, @Price, 1)";
-
-                        int currentUID = UserSession.SessionUID;
-
-                        using (SqlCommand insertCommand = new SqlCommand(insertQuery, con))
-                        {
-                            insertCommand.Parameters.AddWithValue("@Name", name);
-                            insertCommand.Parameters.AddWithValue("@Price", price);
-                            insertCommand.Parameters.AddWithValue("@Uid", currentUID);
-                            insertCommand.ExecuteNonQuery();
-                        }
-                    }
-                }
-
-                con.Close();
+                var insertCmd = con.CreateCommand();
+                insertCmd.CommandText = @"
+                    INSERT INTO Cart (ProductId, Uid, Name, Price, Quantity)
+                    VALUES (
+                        (SELECT Id FROM Product WHERE Name = @name),
+                        @uid,
+                        @name,
+                        @price,
+                        1
+                    )";
+                insertCmd.Parameters.AddWithValue("@name", name);
+                insertCmd.Parameters.AddWithValue("@uid", UserSession.SessionUID);
+                insertCmd.Parameters.AddWithValue("@price", price);
+                insertCmd.ExecuteNonQuery();
             }
 
             return true;

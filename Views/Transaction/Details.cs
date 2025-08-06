@@ -1,6 +1,6 @@
 ﻿using System.Data;
-using System.Data.SqlClient;
 using System.Windows.Forms;
+using Microsoft.Data.Sqlite;
 
 namespace InventoryApp.InventoryApp.dlg
 {
@@ -10,27 +10,25 @@ namespace InventoryApp.InventoryApp.dlg
         {
             InitializeComponent();
             DisplayTransactionItems(id);
-
         }
 
-        //FETCH DATA FROM ORDERS TABLE
+        // FETCH DATA FROM ORDERS TABLE
         private void DisplayTransactionItems(string transactionId)
         {
-            using (SqlConnection con = ConnectionManager.GetConnection())
+            using (SqliteConnection con = ConnectionManager.GetConnection())
             {
-                con.Open();
-
-                using (SqlCommand cmd = new SqlCommand("SELECT Name, Price, Quantity FROM Orders WHERE TransactionId = @transactionId", con))
+                using (SqliteCommand cmd = new SqliteCommand(
+                    "SELECT Name, Price, Quantity FROM Orders WHERE TransactionId = @transactionId", con))
                 {
                     cmd.Parameters.AddWithValue("@transactionId", transactionId);
 
-                    SqlDataAdapter da = new SqlDataAdapter(cmd);
-                    DataTable dt = new DataTable();
-                    da.Fill(dt);
-                    dataGridView1.DataSource = dt;
+                    using (SqliteDataReader reader = cmd.ExecuteReader())
+                    {
+                        DataTable dt = new DataTable();
+                        dt.Load(reader);
+                        dataGridView1.DataSource = dt;
+                    }
                 }
-
-                con.Close();
             }
         }
     }

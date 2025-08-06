@@ -1,4 +1,5 @@
 ﻿using InventoryApp.Views;
+using SQLitePCL;
 using System;
 using System.Windows.Forms;
 
@@ -12,6 +13,7 @@ namespace InventoryApp
         [STAThread]
         static void Main()
         {
+            Batteries.Init();
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new UserAuth());

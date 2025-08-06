@@ -1,38 +1,43 @@
 ﻿using System.Data;
-using System.Data.SqlClient;
 using System.Windows.Forms;
+using Microsoft.Data.Sqlite;
 
 namespace InventoryApp.InventoryApp.dlg
 {
     public partial class History : Form
     {
         private readonly int productId;
+
         public History(int id)
         {
             InitializeComponent();
             productId = id;
             DisplayHistory();
-
         }
 
-        //FETCH DATA FROM HISTORY TABLE
+        // FETCH DATA FROM HISTORY TABLE
         private void DisplayHistory()
         {
-            using (SqlConnection con = ConnectionManager.GetConnection())
+            using (SqliteConnection con = ConnectionManager.GetConnection())
             {
-                con.Open();
-
-                using (SqlCommand cmd = new SqlCommand("SELECT ProductID, [Added Stocks], [Date] FROM History WHERE ProductID = @id", con))
+                // la conexión ya viene abierta desde ConnectionManager
+                using (SqliteCommand cmd = con.CreateCommand())
                 {
+                    cmd.CommandText = @"
+                        SELECT ProductID,
+                               [Added Stocks],
+                               [Date]
+                          FROM History
+                         WHERE ProductID = @id";
                     cmd.Parameters.AddWithValue("@id", productId);
 
-                    SqlDataAdapter da = new SqlDataAdapter(cmd);
-                    DataTable dt = new DataTable();
-                    da.Fill(dt);
-                    dataGridView1.DataSource = dt;
+                    using (SqliteDataReader reader = cmd.ExecuteReader())
+                    {
+                        DataTable dt = new DataTable();
+                        dt.Load(reader);
+                        dataGridView1.DataSource = dt;
+                    }
                 }
-
-                con.Close();
             }
         }
     }

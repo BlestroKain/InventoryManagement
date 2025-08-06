@@ -1,6 +1,7 @@
-﻿using System.Data;
+﻿using System;
+using System.Data;
 using System.Windows.Forms;
-using System.Data.SqlClient;
+using Microsoft.Data.Sqlite;
 
 namespace InventoryApp.InventoryApp.dlg
 {
@@ -12,35 +13,48 @@ namespace InventoryApp.InventoryApp.dlg
             DisplayTransaction();
         }
 
-        //FETCH DATA FROM TRANSACTION TABLE
+        // FETCH DATA FROM "Transaction" TABLE
         private void DisplayTransaction()
         {
             int currentUID = UserSession.SessionUID;
 
-            using (SqlConnection con = ConnectionManager.GetConnection())
+            using (SqliteConnection con = ConnectionManager.GetConnection())
             {
-                con.Open();
-                using (SqlCommand cmd = new SqlCommand("SELECT Date, Subtotal, DiscountPercent, DiscountAmount, Total, Change, TransactionId FROM [Transaction] WHERE Uid = @Uid", con))
+                using (SqliteCommand cmd = new SqliteCommand(
+                    @"SELECT 
+                        Date,
+                        Subtotal,
+                        DiscountPercent,
+                        DiscountAmount,
+                        Total,
+                        ChangeAmt AS [Change],
+                        TransactionId
+                      FROM ""Transaction""
+                     WHERE Uid = @Uid", con))
                 {
                     cmd.Parameters.AddWithValue("@Uid", currentUID);
 
-                    SqlDataAdapter da = new SqlDataAdapter(cmd);
-                    DataTable dt = new DataTable();
-                    da.Fill(dt);
-                    dataGridView1.DataSource = dt;
+                    using (SqliteDataReader reader = cmd.ExecuteReader())
+                    {
+                        DataTable dt = new DataTable();
+                        dt.Load(reader);
+                        dataGridView1.DataSource = dt;
+                    }
                 }
-                con.Close();
             }
         }
 
-        //CELL DOUBLE CLICK EVENT FOR OPENING DETAILS
+        // CELL DOUBLE CLICK: abrir detalles
         private void dataGridView1_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
             if (dataGridView1.SelectedRows.Count > 0)
             {
-                string id = (string)dataGridView1.SelectedRows[0].Cells["TransactionId"].Value;
-                Details dlg = new Details(id);
-                dlg.ShowDialog();
+                string id = dataGridView1.SelectedRows[0]
+                              .Cells["TransactionId"].Value.ToString();
+                using (var dlg = new Details(id))
+                {
+                    dlg.ShowDialog();
+                }
             }
         }
     }

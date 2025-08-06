@@ -1,142 +1,101 @@
-﻿using System;
+﻿using Microsoft.Data.Sqlite;
+using System;
 using System.Data;
 using System.Windows.Forms;
-using System.Data.SqlClient;
 
 namespace InventoryApp.Data
 {
     public class CartManager
     {
-        readonly SqlConnection con = ConnectionManager.GetConnection();
-
-        // Fetch data from Cart
+        // 1) Leer carrito en un DataTable
         public DataTable GetCartItems()
         {
             int currentUID = UserSession.SessionUID;
 
-            using (SqlConnection con = ConnectionManager.GetConnection())
-            {
-                con.Open();
+            var con = ConnectionManager.GetConnection();
+            var cmd = con.CreateCommand();
+            cmd.CommandText = @"
+                SELECT Name, Price, Quantity, ProductId
+                  FROM Cart
+                 WHERE Uid = @Uid";
+            cmd.Parameters.AddWithValue("@Uid", currentUID);
 
-                string query = "SELECT Name, Price, Quantity, ProductId FROM [Cart] WHERE Uid = @Uid";
-                using (SqlCommand cmd = new SqlCommand(query, con))
-                {
-                    cmd.Parameters.AddWithValue("@Uid", currentUID);
-
-                    SqlDataAdapter da = new SqlDataAdapter(cmd);
-                    DataTable dt = new DataTable();
-                    da.Fill(dt);
-                    return dt;
-                }
-            }
+            var reader = cmd.ExecuteReader();
+            var dt = new DataTable();
+            dt.Load(reader);  // carga columnas+filas
+            return dt;
         }
 
-        // Update Quantity
+        // 2) Actualizar cantidad
         public void UpdateQuantityInCart(int itemId, string quantity)
         {
-            con.Open();
-            using (SqlCommand cmd = con.CreateCommand())
-            {
-                cmd.CommandType = CommandType.Text;
-                cmd.CommandText = "UPDATE Cart SET Quantity = @quantity WHERE ProductId = @productId";
-                cmd.Parameters.AddWithValue("@quantity", quantity);
-                cmd.Parameters.AddWithValue("@productId", itemId);
-                cmd.ExecuteNonQuery();
-            }
-            con.Close();
+            var con = ConnectionManager.GetConnection();
+            var cmd = con.CreateCommand();
+            cmd.CommandText = @"
+                UPDATE Cart
+                   SET Quantity = @quantity
+                 WHERE ProductId = @productId";
+            cmd.Parameters.AddWithValue("@quantity", quantity);
+            cmd.Parameters.AddWithValue("@productId", itemId);
+            cmd.ExecuteNonQuery();
         }
 
-        // Total Price
+        // 3) Total del carrito
         public decimal GetTotalPrice()
         {
-            decimal totalPrice = 0;
+            var con = ConnectionManager.GetConnection();
+            var cmd = con.CreateCommand();
+            cmd.CommandText = "SELECT SUM(Price * Quantity) FROM Cart";
+            var result = cmd.ExecuteScalar();
 
-            using (SqlConnection con = ConnectionManager.GetConnection())
-            {
-                con.Open();
-
-                string query = "SELECT SUM(Price * Quantity) AS TotalPrice FROM Cart";
-                using (SqlCommand command = new SqlCommand(query, con))
-                {
-                    object result = command.ExecuteScalar();
-                    if (result != DBNull.Value && result != null)
-                    {
-                        totalPrice = Convert.ToDecimal(result);
-                    }
-                }
-            }
-
-            return totalPrice;
+            return (result != null && result != DBNull.Value)
+                ? Convert.ToDecimal(result)
+                : 0m;
         }
 
-        // Remove product from Cart
+        // 4) Eliminar item
         public void RemoveCartItem(int productId)
         {
-            using (SqlConnection con = ConnectionManager.GetConnection())
-            {
-                con.Open();
-
-                SqlCommand cmd = con.CreateCommand();
-                cmd.CommandType = CommandType.Text;
-                cmd.CommandText = "DELETE FROM Cart WHERE ProductId = @ProductId";
-                cmd.Parameters.AddWithValue("@ProductId", productId);
-                cmd.ExecuteNonQuery();
-            }
+            var con = ConnectionManager.GetConnection();
+            var cmd = con.CreateCommand();
+            cmd.CommandText = "DELETE FROM Cart WHERE ProductId = @ProductId";
+            cmd.Parameters.AddWithValue("@ProductId", productId);
+            cmd.ExecuteNonQuery();
         }
 
-        //Count items on Cart
+        // 5) Contar items
         public int GetCartItemCount()
         {
             int currentUID = UserSession.SessionUID;
-            int itemCount = 0;
 
-            using (SqlConnection con = ConnectionManager.GetConnection())
-            {
-                con.Open();
+            var con = ConnectionManager.GetConnection();
+            var cmd = con.CreateCommand();
+            cmd.CommandText = "SELECT COUNT(*) FROM Cart WHERE Uid = @Uid";
+            cmd.Parameters.AddWithValue("@Uid", currentUID);
 
-                string query = "SELECT COUNT(*) FROM Cart WHERE Uid = @Uid";
-                using (SqlCommand command = new SqlCommand(query, con))
-                {
-                    command.Parameters.AddWithValue("@Uid", currentUID);
-                    itemCount = (int)command.ExecuteScalar();
-                }
-            }
-
-            return itemCount;
+            var result = cmd.ExecuteScalar();
+            return (result != null && result != DBNull.Value)
+                ? Convert.ToInt32(result)
+                : 0;
         }
 
-        // Load Cart items to ListBox
+        // 6) Cargar lista en ListBox
         public void LoadCartItems(ListBox listBox)
         {
-            try
+            var con = ConnectionManager.GetConnection();
+            var cmd = con.CreateCommand();
+            cmd.CommandText = "SELECT Name, Price, Quantity FROM Cart";
+
+            var reader = cmd.ExecuteReader();
+            listBox.Items.Clear();
+
+            while (reader.Read())
             {
-                con.Open();
+                var name = reader.GetString(0);
+                var price = reader.GetDecimal(1);
+                var quantity = reader.GetInt32(2);
 
-                string selectQuery = "SELECT Name, Price, Quantity FROM Cart";
-
-                using (SqlCommand command = new SqlCommand(selectQuery, con))
-                {
-                    using (SqlDataReader reader = command.ExecuteReader())
-                    {
-                        listBox.Items.Clear();
-
-                        while (reader.Read())
-                        {
-                            string name = reader["Name"].ToString();
-                            int price = Convert.ToInt32(reader["Price"]);
-                            int quantity = Convert.ToInt32(reader["Quantity"]);
-
-                            string item = $"{quantity} x {name} - ${price}";
-                            listBox.Items.Add(item);
-                        }
-                    }
-                }
-
-                con.Close();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("An error occurred while loading cart items: " + ex.Message);
+                listBox.Items.Add($"{quantity} x {name} - ${price}");
             }
         }
     }
