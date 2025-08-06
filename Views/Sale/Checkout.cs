@@ -37,12 +37,6 @@ namespace InventoryApp
             pointOfSale.CalculateDiscount(label3.Text, comboBox1.SelectedItem, label7, label8);
         }
 
-        private void comboBox1_TextChanged(object sender, EventArgs e)
-        {
-            // TODO: not working
-            pointOfSale.CalculateDiscount(label3.Text, comboBox1.SelectedItem, label7, label8);
-        }
-
         // TEXTBOX EVENT
         private void textBox2_TextChanged(object sender, EventArgs e)
         {
@@ -58,14 +52,11 @@ namespace InventoryApp
         // INSERT STOCK BUTTON
         private void button1_Click(object sender, EventArgs e)
         {
-            TransactionManager transactionManager = new TransactionManager();
             TransactionIdGenerator transactionIdGenerator = new TransactionIdGenerator();
-
             string transactionId = transactionIdGenerator.GenerateTransactionId();
 
-            if (pointOfSale.ProcessTransaction(label3.Text, textBox2.Text, comboBox1.SelectedItem, transactionId))
+            if (pointOfSale.ProcessTransaction(label3.Text, textBox2.Text, comboBox1.SelectedItem, transactionId, listBox1))
             {
-                transactionManager.InsertTransactionItems(listBox1, transactionId);
                 DialogResult = DialogResult.OK;
             }
         }

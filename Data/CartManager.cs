@@ -11,16 +11,15 @@ namespace InventoryApp.Data
         public DataTable GetCartItems()
         {
             int currentUID = UserSession.SessionUID;
-
-            var con = ConnectionManager.GetConnection();
-            var cmd = con.CreateCommand();
+            using var con = ConnectionManager.GetConnection();
+            using var cmd = con.CreateCommand();
             cmd.CommandText = @"
                 SELECT Name, Price, Quantity, ProductId
                   FROM Cart
                  WHERE Uid = @Uid";
             cmd.Parameters.AddWithValue("@Uid", currentUID);
 
-            var reader = cmd.ExecuteReader();
+            using var reader = cmd.ExecuteReader();
             var dt = new DataTable();
             dt.Load(reader);  // carga columnas+filas
             return dt;
@@ -29,23 +28,26 @@ namespace InventoryApp.Data
         // 2) Actualizar cantidad
         public void UpdateQuantityInCart(int itemId, string quantity)
         {
-            var con = ConnectionManager.GetConnection();
-            var cmd = con.CreateCommand();
+            using var con = ConnectionManager.GetConnection();
+            using var cmd = con.CreateCommand();
             cmd.CommandText = @"
                 UPDATE Cart
                    SET Quantity = @quantity
-                 WHERE ProductId = @productId";
+                 WHERE ProductId = @productId
+                   AND Uid      = @Uid";
             cmd.Parameters.AddWithValue("@quantity", quantity);
             cmd.Parameters.AddWithValue("@productId", itemId);
+            cmd.Parameters.AddWithValue("@Uid", UserSession.SessionUID);
             cmd.ExecuteNonQuery();
         }
 
         // 3) Total del carrito
         public decimal GetTotalPrice()
         {
-            var con = ConnectionManager.GetConnection();
-            var cmd = con.CreateCommand();
-            cmd.CommandText = "SELECT SUM(Price * Quantity) FROM Cart";
+            using var con = ConnectionManager.GetConnection();
+            using var cmd = con.CreateCommand();
+            cmd.CommandText = "SELECT SUM(Price * Quantity) FROM Cart WHERE Uid = @Uid";
+            cmd.Parameters.AddWithValue("@Uid", UserSession.SessionUID);
             var result = cmd.ExecuteScalar();
 
             return (result != null && result != DBNull.Value)
@@ -56,10 +58,11 @@ namespace InventoryApp.Data
         // 4) Eliminar item
         public void RemoveCartItem(int productId)
         {
-            var con = ConnectionManager.GetConnection();
-            var cmd = con.CreateCommand();
-            cmd.CommandText = "DELETE FROM Cart WHERE ProductId = @ProductId";
+            using var con = ConnectionManager.GetConnection();
+            using var cmd = con.CreateCommand();
+            cmd.CommandText = "DELETE FROM Cart WHERE ProductId = @ProductId AND Uid = @Uid";
             cmd.Parameters.AddWithValue("@ProductId", productId);
+            cmd.Parameters.AddWithValue("@Uid", UserSession.SessionUID);
             cmd.ExecuteNonQuery();
         }
 
@@ -68,8 +71,8 @@ namespace InventoryApp.Data
         {
             int currentUID = UserSession.SessionUID;
 
-            var con = ConnectionManager.GetConnection();
-            var cmd = con.CreateCommand();
+            using var con = ConnectionManager.GetConnection();
+            using var cmd = con.CreateCommand();
             cmd.CommandText = "SELECT COUNT(*) FROM Cart WHERE Uid = @Uid";
             cmd.Parameters.AddWithValue("@Uid", currentUID);
 
@@ -82,11 +85,12 @@ namespace InventoryApp.Data
         // 6) Cargar lista en ListBox
         public void LoadCartItems(ListBox listBox)
         {
-            var con = ConnectionManager.GetConnection();
-            var cmd = con.CreateCommand();
-            cmd.CommandText = "SELECT Name, Price, Quantity FROM Cart";
+            using var con = ConnectionManager.GetConnection();
+            using var cmd = con.CreateCommand();
+            cmd.CommandText = "SELECT Name, Price, Quantity FROM Cart WHERE Uid = @Uid";
+            cmd.Parameters.AddWithValue("@Uid", UserSession.SessionUID);
 
-            var reader = cmd.ExecuteReader();
+            using var reader = cmd.ExecuteReader();
             listBox.Items.Clear();
 
             while (reader.Read())

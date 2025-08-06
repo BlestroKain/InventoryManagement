@@ -53,7 +53,7 @@ namespace InventoryApp.Utility
         }
 
         // Process Transaction then save to database
-        public bool ProcessTransaction(string totalText, string cashText, object selectedItem, string transactionId)
+        public bool ProcessTransaction(string totalText, string cashText, object selectedItem, string transactionId, ListBox listBox)
         {
             int subtotal = Convert.ToInt32(totalText);
             int cash = string.IsNullOrWhiteSpace(cashText) ? 0 : Convert.ToInt32(cashText);
@@ -69,7 +69,6 @@ namespace InventoryApp.Utility
             // Calculate the total after discount
             double total = subtotal - discountAmount;
 
-            double totalAfterDiscount;
             // Validate if there is enough cash
             if (cash < total)
             {
@@ -83,10 +82,7 @@ namespace InventoryApp.Utility
             TransactionManager transactionManager = new TransactionManager();
             try
             {
-                transactionManager.SaveTransactionToDatabase(transactionId, subtotal, cash, discountPercent, discountAmount, change, currentDate, total);
-                transactionManager.DeleteCartData();
-
-                totalAfterDiscount = total; // Assign the calculated total after discount
+                transactionManager.SaveTransactionToDatabase(transactionId, subtotal, cash, discountPercent, discountAmount, change, currentDate, total, listBox);
                 return true;
             }
             catch (Exception ex)

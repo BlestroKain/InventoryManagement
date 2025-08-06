@@ -8,8 +8,8 @@ namespace InventoryApp.Data
         // 1) Obtener el Id del producto por nombre
         public int GetProductIdByName(string itemName)
         {
-            var con = ConnectionManager.GetConnection();
-            var cmd = con.CreateCommand();
+            using var con = ConnectionManager.GetConnection();
+            using var cmd = con.CreateCommand();
             cmd.CommandText = @"
                 SELECT Id
                   FROM Product
@@ -25,8 +25,8 @@ namespace InventoryApp.Data
         // 2) Obtener stock actual por Id
         public int GetCurrentStockById(int productId)
         {
-                var con = ConnectionManager.GetConnection();
-            var cmd = con.CreateCommand();
+            using var con = ConnectionManager.GetConnection();
+            using var cmd = con.CreateCommand();
             cmd.CommandText = @"
                 SELECT Stock
                   FROM Product
@@ -42,8 +42,8 @@ namespace InventoryApp.Data
         // 3) Actualizar stock del producto
         public void UpdateStock(int productId, int newStock)
         {
-            var con = ConnectionManager.GetConnection();
-            var cmd = con.CreateCommand();
+            using var con = ConnectionManager.GetConnection();
+            using var cmd = con.CreateCommand();
             cmd.CommandText = @"
                 UPDATE Product
                    SET Stock = @stock
@@ -56,8 +56,8 @@ namespace InventoryApp.Data
         // 4) Insertar entrada en historial de stocks
         public void InsertHistory(int productId, int addedStocks)
         {
-            var con = ConnectionManager.GetConnection();
-            var cmd = con.CreateCommand();
+            using var con = ConnectionManager.GetConnection();
+            using var cmd = con.CreateCommand();
             cmd.CommandText = @"
                 INSERT INTO History (ProductID, [Added Stocks], [Date])
                 VALUES (@productId, @addedStocks, CURRENT_TIMESTAMP)";
