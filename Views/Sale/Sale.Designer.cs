@@ -48,7 +48,7 @@
             this.groupBox1.Size = new System.Drawing.Size(642, 477);
             this.groupBox1.TabIndex = 4;
             this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "Cart";
+            this.groupBox1.Text = "Carrito";
             // 
             // dataGridView1
             // 
@@ -76,7 +76,7 @@
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(102, 30);
             this.button2.TabIndex = 6;
-            this.button2.Text = "REMOVE";
+            this.button2.Text = "ELIMINAR";
             this.button2.UseVisualStyleBackColor = true;
             this.button2.Click += new System.EventHandler(this.button2_Click);
             // 
@@ -87,7 +87,7 @@
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(102, 30);
             this.button1.TabIndex = 5;
-            this.button1.Text = "CHECK OUT";
+            this.button1.Text = "COBRAR";
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
@@ -98,7 +98,7 @@
             this.button4.Name = "button4";
             this.button4.Size = new System.Drawing.Size(102, 30);
             this.button4.TabIndex = 8;
-            this.button4.Text = "QUANTITY";
+            this.button4.Text = "CANTIDAD";
             this.button4.UseVisualStyleBackColor = true;
             this.button4.Click += new System.EventHandler(this.button4_Click);
             // 
@@ -112,7 +112,7 @@
             this.Controls.Add(this.button2);
             this.Controls.Add(this.button1);
             this.Name = "Cart";
-            this.Text = "Cart";
+            this.Text = "Carrito";
             this.groupBox1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
             this.ResumeLayout(false);

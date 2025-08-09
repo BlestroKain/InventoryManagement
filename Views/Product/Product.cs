@@ -31,6 +31,7 @@ namespace RapiMesa
         private async Task LoadProductsAsync()
         {
             dataGridView1.DataSource = await productManager.GetProductsAsync();
+            SetColumnHeaders();
         }
 
         // Búsqueda y visualización
@@ -38,6 +39,7 @@ namespace RapiMesa
         {
             DataTable dt = await productManager.SearchProductsAsync(textBox1.Text);
             dataGridView1.DataSource = dt;
+            SetColumnHeaders();
         }
 
         private async void button6_Click(object sender, EventArgs e)
@@ -62,6 +64,20 @@ namespace RapiMesa
             }
         }
 
+        private void SetColumnHeaders()
+        {
+            if (dataGridView1.Columns["Name"] != null)
+                dataGridView1.Columns["Name"].HeaderText = "Nombre";
+            if (dataGridView1.Columns["Price"] != null)
+                dataGridView1.Columns["Price"].HeaderText = "Precio";
+            if (dataGridView1.Columns["Stock"] != null)
+                dataGridView1.Columns["Stock"].HeaderText = "Stock";
+            if (dataGridView1.Columns["Unit"] != null)
+                dataGridView1.Columns["Unit"].HeaderText = "Unidad";
+            if (dataGridView1.Columns["Category"] != null)
+                dataGridView1.Columns["Category"].HeaderText = "Categoría";
+        }
+
         // INSERT BUTTON
         private async void Add_Click(object sender, EventArgs e)
         {
@@ -80,8 +96,8 @@ namespace RapiMesa
             if (dataGridView1.SelectedRows.Count == 0)
             {
                 MessageBox.Show(
-                    "No product is available for editing.",
-                    "Empty!",
+                    "No hay productos disponibles para editar.",
+                    "Vacío",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Information
                 );
@@ -92,7 +108,7 @@ namespace RapiMesa
             if (drv == null)
             {
                 MessageBox.Show(
-                    "Unable to read the selected row.",
+                    "No se puede leer la fila seleccionada.",
                     "Error",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error
@@ -120,7 +136,7 @@ namespace RapiMesa
             catch (Exception ex)
             {
                 MessageBox.Show(
-                    "Error reading product data:\r\n" + ex.Message,
+                    "Error al leer los datos del producto:\r\n" + ex.Message,
                     "Error",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error
@@ -134,8 +150,8 @@ namespace RapiMesa
             if (dataGridView1.SelectedRows.Count == 0)
             {
                 MessageBox.Show(
-                    "Please select a product to delete.",
-                    "Empty!",
+                    "Seleccione un producto para eliminar.",
+                    "Vacío",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Information
                 );
@@ -145,8 +161,8 @@ namespace RapiMesa
             int id = Convert.ToInt32(dataGridView1.SelectedRows[0].Cells["Id"].Value);
 
             if (MessageBox.Show(
-                    "Are you sure want to delete this item?",
-                    "Warning!",
+                    "¿Está seguro de que desea eliminar este artículo?",
+                    "Advertencia",
                     MessageBoxButtons.YesNo,
                     MessageBoxIcon.Warning
                 ) == DialogResult.Yes)
@@ -162,8 +178,8 @@ namespace RapiMesa
             if (dataGridView1.SelectedRows.Count == 0)
             {
                 MessageBox.Show(
-                    "No products are available for adding stock.",
-                    "Empty!",
+                    "No hay productos disponibles para agregar stock.",
+                    "Vacío",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Information
                 );
@@ -186,8 +202,8 @@ namespace RapiMesa
             if (dataGridView1.SelectedRows.Count == 0)
             {
                 MessageBox.Show(
-                    "No product history is available.",
-                    "Empty!",
+                    "No hay historial de producto disponible.",
+                    "Vacío",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Information
                 );
@@ -210,7 +226,7 @@ namespace RapiMesa
                 {
                     Name = "AddToCart",
                     HeaderText = "",
-                    Text = "Add",
+                    Text = "Agregar",
                     UseColumnTextForButtonValue = true,
                     Width = 60
                 };
@@ -235,7 +251,7 @@ namespace RapiMesa
 
             if (stock <= 0)
             {
-                MessageBox.Show("Product out of stock.", "Cart",
+                MessageBox.Show("Producto sin stock.", "Carrito",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
@@ -243,8 +259,8 @@ namespace RapiMesa
             // Google Sheets
             bool added = await ProductManager.AddItemToCartAsync(name, price);
             MessageBox.Show(
-                added ? "Product added to cart." : "Failed to add product.",
-                "Cart",
+                added ? "Producto añadido al carrito." : "No se pudo añadir el producto.",
+                "Carrito",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Information
             );

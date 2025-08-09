@@ -134,7 +134,7 @@ namespace RapiMesa
             catch (Exception ex)
             {
                 MessageBox.Show(
-                    "Error processing transaction:\r\n" + ex.Message,
+                    "Error al procesar la transacción:\r\n" + ex.Message,
                     "Error",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error

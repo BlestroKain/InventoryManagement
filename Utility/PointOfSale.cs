@@ -12,10 +12,10 @@ namespace RapiMesa.Utility
         {
             comboBox.Items.Clear();
             comboBox.Items.Add(new ComboBoxItem { Value = 0, Description = "Ninguno" });
-            comboBox.Items.Add(new ComboBoxItem { Value = 10, Description = "10% off" });
-            comboBox.Items.Add(new ComboBoxItem { Value = 15, Description = "15% off" });
-            comboBox.Items.Add(new ComboBoxItem { Value = 30, Description = "30% off" });
-            comboBox.Items.Add(new ComboBoxItem { Value = 50, Description = "50% off" });
+            comboBox.Items.Add(new ComboBoxItem { Value = 10, Description = "10% desc" });
+            comboBox.Items.Add(new ComboBoxItem { Value = 15, Description = "15% desc" });
+            comboBox.Items.Add(new ComboBoxItem { Value = 30, Description = "30% desc" });
+            comboBox.Items.Add(new ComboBoxItem { Value = 50, Description = "50% desc" });
             comboBox.SelectedIndex = 0;
         }
 
@@ -71,7 +71,7 @@ namespace RapiMesa.Utility
 
                 if (cash < total)
                 {
-                    MessageBox.Show("Not enough cash to complete the transaction.");
+                    MessageBox.Show("No hay efectivo suficiente para completar la transacción.");
                     return false;
                 }
 
@@ -93,7 +93,7 @@ namespace RapiMesa.Utility
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error processing transaction:\r\n" + ex.Message,
+                MessageBox.Show("Error al procesar la transacción:\r\n" + ex.Message,
                     "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return false;
             }

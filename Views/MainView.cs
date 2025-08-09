@@ -26,7 +26,7 @@ namespace RapiMesa
             // Cargar Dashboard de entrada
             SwitchForm(new Dashboard());
 
-            button1.Text = "Logout (" + username + ")";
+            button1.Text = "Cerrar sesión (" + username + ")";
 
             // Iniciar contador cuando el form ya está visible (permite await sin congelar)
             this.Shown -= MainView_Shown;
@@ -102,8 +102,8 @@ namespace RapiMesa
         private void button1_Click(object sender, EventArgs e)
         {
             if (MessageBox.Show(
-                    "Are you sure want to logout?",
-                    "Warning!",
+                    "¿Seguro que desea cerrar sesión?",
+                    "Advertencia",
                     MessageBoxButtons.YesNo,
                     MessageBoxIcon.Warning) == DialogResult.Yes)
             {
@@ -120,7 +120,7 @@ namespace RapiMesa
             try
             {
                 int cartItemCount = await cartManager.GetCartItemCountAsync();
-                radioButton3.Text = $"Sale ({cartItemCount})";
+                radioButton3.Text = $"Carrito ({cartItemCount})";
             }
             catch
             {

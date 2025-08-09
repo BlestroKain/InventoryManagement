@@ -43,13 +43,13 @@ namespace RapiMesa.Views
 
             if (string.IsNullOrWhiteSpace(username))
             {
-                errorProvider1.SetError(textBox1, "Please enter a username.");
+                errorProvider1.SetError(textBox1, "Ingrese un nombre de usuario.");
                 isValid = false;
             }
 
             if (string.IsNullOrWhiteSpace(password))
             {
-                errorProvider1.SetError(textBox2, "Please enter a password.");
+                errorProvider1.SetError(textBox2, "Ingrese una contraseña.");
                 isValid = false;
             }
 
@@ -75,8 +75,8 @@ namespace RapiMesa.Views
                     else
                     {
                         MessageBox.Show(
-                            "Invalid username or password. Please try again.",
-                            "Login Error",
+                            "Usuario o contraseña inválidos. Intenta de nuevo.",
+                            "Error de inicio de sesión",
                             MessageBoxButtons.OK,
                             MessageBoxIcon.Error
                         );
@@ -86,7 +86,7 @@ namespace RapiMesa.Views
             catch (Exception ex)
             {
                 MessageBox.Show(
-                    "Authentication error:\r\n" + ex.Message,
+                    "Error de autenticación:\r\n" + ex.Message,
                     "Error",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error
@@ -109,13 +109,13 @@ namespace RapiMesa.Views
 
             if (isRegisterMode)
             {
-                linkLabel1.Text = "LOGIN";
-                button1.Text = "REGISTER";
+                linkLabel1.Text = "INICIAR SESIÓN";
+                button1.Text = "REGISTRARSE";
             }
             else
             {
-                linkLabel1.Text = "REGISTER";
-                button1.Text = "LOGIN";
+                linkLabel1.Text = "REGISTRARSE";
+                button1.Text = "INICIAR SESIÓN";
             }
         }
 

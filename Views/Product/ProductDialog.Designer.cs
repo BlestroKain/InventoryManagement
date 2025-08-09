@@ -62,7 +62,7 @@
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(35, 13);
             this.label1.TabIndex = 1;
-            this.label1.Text = "Name";
+            this.label1.Text = "Nombre";
             // 
             // PriceTxt
             // 
@@ -80,7 +80,7 @@
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(31, 13);
             this.label2.TabIndex = 3;
-            this.label2.Text = "Price";
+            this.label2.Text = "Precio";
             // 
             // StockTxt
             // 
@@ -116,7 +116,7 @@
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(26, 13);
             this.label4.TabIndex = 7;
-            this.label4.Text = "Unit";
+            this.label4.Text = "Unidad";
             // 
             // CategoryCmb
             // 
@@ -135,7 +135,7 @@
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(49, 13);
             this.label5.TabIndex = 9;
-            this.label5.Text = "Category";
+            this.label5.Text = "Categoría";
             // 
             // Savebtn
             // 
@@ -195,7 +195,7 @@
             this.Name = "ProductDialog";
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-            this.Text = "ProductDialog";
+            this.Text = "Producto";
             ((System.ComponentModel.ISupportInitialize)(this.errorProvider1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();

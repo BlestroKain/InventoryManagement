@@ -32,6 +32,13 @@ namespace RapiMesa.InventoryApp.Views
             dataGridView1.AutoGenerateColumns = true;
             dataGridView1.DataSource = dt;
 
+            if (dataGridView1.Columns["Name"] != null)
+                dataGridView1.Columns["Name"].HeaderText = "Nombre";
+            if (dataGridView1.Columns["Price"] != null)
+                dataGridView1.Columns["Price"].HeaderText = "Precio";
+            if (dataGridView1.Columns["Quantity"] != null)
+                dataGridView1.Columns["Quantity"].HeaderText = "Cantidad";
+
             HideCol("ProductId");  // interno
             HideCol("Uid");        // interno
 
@@ -59,8 +66,8 @@ namespace RapiMesa.InventoryApp.Views
             else
             {
                 MessageBox.Show(
-                    "Cart is empty.",
-                    "Empty Cart",
+                    "El carrito está vacío.",
+                    "Carrito vacío",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Information
                 );
@@ -72,7 +79,7 @@ namespace RapiMesa.InventoryApp.Views
         {
             if (dataGridView1.SelectedRows.Count == 0)
             {
-                MessageBox.Show("Cart is empty.", "Empty Cart", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("El carrito está vacío.", "Carrito vacío", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
@@ -98,14 +105,14 @@ namespace RapiMesa.InventoryApp.Views
         {
             if (dataGridView1.SelectedRows.Count == 0)
             {
-                MessageBox.Show("Cart is empty.", "Empty Cart", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("El carrito está vacío.", "Carrito vacío", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
             int cartId = Convert.ToInt32(dataGridView1.SelectedRows[0].Cells["Id"].Value);
 
-            if (MessageBox.Show("Are you sure you want to remove this item from your cart?",
-                                "Warning!", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
+            if (MessageBox.Show("¿Está seguro de que desea eliminar este artículo del carrito?",
+                                "Advertencia", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
             {
                 await cartManager.RemoveCartItemAsync(cartId);
                 await DisplayCartItemAsync();

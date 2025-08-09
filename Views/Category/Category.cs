@@ -48,8 +48,8 @@ namespace RapiMesa.InventoryApp.Views
             if (dataGridView1.SelectedRows.Count == 0)
             {
                 MessageBox.Show(
-                    "No category is available for editing.",
-                    "Empty Category",
+                    "No hay categorías disponibles para editar.",
+                    "Categoría vacía",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Information
                 );
@@ -59,7 +59,7 @@ namespace RapiMesa.InventoryApp.Views
             var drv = dataGridView1.SelectedRows[0].DataBoundItem as DataRowView;
             if (drv == null)
             {
-                MessageBox.Show("Unable to read selected category.", "Error",
+                MessageBox.Show("No se puede leer la categoría seleccionada.", "Error",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
@@ -80,7 +80,7 @@ namespace RapiMesa.InventoryApp.Views
             catch (Exception ex)
             {
                 MessageBox.Show(
-                    "Error reading category data:\r\n" + ex.Message,
+                    "Error al leer los datos de la categoría:\r\n" + ex.Message,
                     "Error",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error
@@ -94,8 +94,8 @@ namespace RapiMesa.InventoryApp.Views
             if (dataGridView1.SelectedRows.Count == 0)
             {
                 MessageBox.Show(
-                    "Please select a category to delete.",
-                    "Empty Category",
+                    "Seleccione una categoría para eliminar.",
+                    "Categoría vacía",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Information
                 );
@@ -105,7 +105,7 @@ namespace RapiMesa.InventoryApp.Views
             var drv = dataGridView1.SelectedRows[0].DataBoundItem as DataRowView;
             if (drv == null)
             {
-                MessageBox.Show("Unable to read selected category.", "Error",
+                MessageBox.Show("No se puede leer la categoría seleccionada.", "Error",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
@@ -113,8 +113,8 @@ namespace RapiMesa.InventoryApp.Views
             int id = Convert.ToInt32(drv["Id"]);
 
             if (MessageBox.Show(
-                    "Are you sure you want to delete this category?",
-                    "Warning!",
+                    "¿Está seguro de que desea eliminar esta categoría?",
+                    "Advertencia",
                     MessageBoxButtons.YesNo,
                     MessageBoxIcon.Warning
                 ) == DialogResult.Yes)

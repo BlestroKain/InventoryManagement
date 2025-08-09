@@ -17,7 +17,7 @@ namespace RapiMesa
             InitializeComponent();
             categoryManager = manager ?? throw new ArgumentNullException(nameof(manager));
             itemId = 0;
-            Text = "Add New Category";
+            Text = "Agregar Categoría";
 
             textBox2.Validating += textBox2_Validating;
         }
@@ -28,7 +28,7 @@ namespace RapiMesa
             InitializeComponent();
             categoryManager = manager ?? throw new ArgumentNullException(nameof(manager));
             itemId = id;
-            Text = "Edit Category";
+            Text = "Editar Categoría";
 
             textBox2.Text = categoryItem ?? "";
             textBox2.Validating += textBox2_Validating;
@@ -42,7 +42,7 @@ namespace RapiMesa
 
             if (string.IsNullOrWhiteSpace(name))
             {
-                errorProvider1.SetError(textBox2, "Category name is required.");
+                errorProvider1.SetError(textBox2, "El nombre de la categoría es obligatorio.");
                 return false;
             }
 
@@ -57,7 +57,7 @@ namespace RapiMesa
                 if (string.Equals(existingName, name, StringComparison.OrdinalIgnoreCase)
                     && (itemId == 0 || existingId != itemId))
                 {
-                    errorProvider1.SetError(textBox2, "This category already exists.");
+                    errorProvider1.SetError(textBox2, "Esta categoría ya existe.");
                     return false;
                 }
             }
@@ -69,7 +69,7 @@ namespace RapiMesa
         {
             if (string.IsNullOrWhiteSpace(textBox2.Text))
             {
-                errorProvider1.SetError(textBox2, "Category name is required.");
+                errorProvider1.SetError(textBox2, "El nombre de la categoría es obligatorio.");
                 e.Cancel = true;
             }
             else
@@ -103,7 +103,7 @@ namespace RapiMesa
             catch (Exception ex)
             {
                 MessageBox.Show(
-                    "Error saving category:\r\n" + ex.Message,
+                    "Error al guardar la categoría:\r\n" + ex.Message,
                     "Error",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error
