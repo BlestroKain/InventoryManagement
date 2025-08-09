@@ -1,22 +1,34 @@
-﻿using System.IO;
-using Microsoft.Data.Sqlite;
+﻿using System;
+using Google.Apis.Sheets.v4;
 
-public static class ConnectionManager
+namespace RapiMesa.Data
 {
-    private const string DbFile = "rapimesa.db";
-    private static readonly string ConnectionString = $"Data Source={DbFile}";
-
-    public static SqliteConnection GetConnection()
+    public static class ConnectionManager
     {
-        // (Opcional) Si quieres asegurarte de que el archivo exista antes de abrir:
-        if (!File.Exists(DbFile))
+        private static bool _initialized;
+
+        public static void Init(string clientSecretPath, string spreadsheetId)
         {
-            // Basta con crearlo vacío; SQLite lo inicializará al abrir la conexión
-            File.Create(DbFile).Dispose();
+            if (_initialized) return;
+            SheetsClient.Init(clientSecretPath, spreadsheetId);
+            _initialized = true;
         }
 
-        var conn = new SqliteConnection(ConnectionString);
-        conn.Open();    // Aquí SQLite crea el esquema interno y guarda el .db
-        return conn;
+        public static SheetsService GetService()
+        {
+            if (!_initialized)
+                throw new InvalidOperationException("Sheets no inicializado. Llama a ConnectionManager.Init(...) en Program.Main.");
+            return SheetsClient.Service;
+        }
+
+        public static string SpreadsheetId
+        {
+            get
+            {
+                if (!_initialized)
+                    throw new InvalidOperationException("Sheets no inicializado. Llama a ConnectionManager.Init(...) primero.");
+                return SheetsClient.SpreadsheetId;
+            }
+        }
     }
 }

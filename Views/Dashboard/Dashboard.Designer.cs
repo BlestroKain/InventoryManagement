@@ -1,4 +1,4 @@
-﻿namespace InventoryApp.Views.Dashboard
+﻿namespace RapiMesa.Views.Dashboard
 {
     partial class Dashboard
     {

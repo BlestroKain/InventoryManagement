@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System;
 
-namespace InventoryApp.Utility
+namespace RapiMesa.Utility
 {
     class TransactionIdGenerator
     {

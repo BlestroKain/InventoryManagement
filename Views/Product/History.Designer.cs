@@ -1,4 +1,4 @@
-﻿namespace InventoryApp.InventoryApp.dlg
+﻿namespace RapiMesa.InventoryApp.dlg
 {
     partial class History
     {

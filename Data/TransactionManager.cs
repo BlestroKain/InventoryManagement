@@ -1,13 +1,14 @@
 using System;
-using System.Windows.Forms;
-using Microsoft.Data.Sqlite;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using System.Threading.Tasks;
 
-namespace InventoryApp.Data
+namespace RapiMesa.Data
 {
     internal class TransactionManager
     {
-        // Guarda la transacción de forma atómica junto con los items y la limpieza del carrito
-        public void SaveTransactionToDatabase(
+        public async Task SaveTransactionAsync(
             string transactionId,
             decimal subtotal,
             decimal cash,
@@ -15,99 +16,150 @@ namespace InventoryApp.Data
             double discountAmount,
             double change,
             DateTime currentDate,
-            double total,
-            ListBox listBox
+            double total
         )
         {
-            using var con = ConnectionManager.GetConnection();
-            using var transaction = con.BeginTransaction();
+            int uid = UserSession.SessionUID;
 
-            try
+            // 1) Leer carrito del usuario
+            DataTable cart = await SheetsRepo.ReadTableAsync("Cart");
+            var myCartRows = new List<Tuple<int, DataRow>>(); // (row1, row)
+            int i = 0;
+            foreach (DataRow r in cart.Rows)
             {
-                // Actualizar stock
-                using (var updateCmd = con.CreateCommand())
+                i++;
+                int rowUid;
+                int.TryParse(r["Uid"]?.ToString(), out rowUid);
+                if (rowUid == uid)
                 {
-                    updateCmd.Transaction = transaction;
-                    updateCmd.CommandText = @"
-                    UPDATE Product
-                       SET Stock = Stock - (
-                           SELECT Quantity
-                             FROM Cart
-                            WHERE Cart.ProductId = Product.Id
-                              AND Cart.Uid       = @Uid
-                       )
-                     WHERE Id IN (
-                           SELECT ProductId FROM Cart WHERE Uid = @Uid
-                       )";
-                    updateCmd.Parameters.AddWithValue("@Uid", UserSession.SessionUID);
-                    updateCmd.ExecuteNonQuery();
+                    // +1 por el header
+                    myCartRows.Add(Tuple.Create(i + 1, r));
                 }
+            }
 
-                // Insertar cabecera de transacción
-                using (var cmd = con.CreateCommand())
+            if (myCartRows.Count == 0)
+                throw new InvalidOperationException("Cart is empty for current user.");
+
+            // 2) Armar items (resolver ProductId si falta)
+            var items = new List<CartItem>();
+            foreach (var pair in myCartRows)
+            {
+                var r = pair.Item2;
+
+                string name = r["Name"]?.ToString() ?? "";
+                int qty = ToInt(r["Quantity"]);
+                int productId = ToInt(r["ProductId"]);
+                if (productId == 0)
                 {
-                    cmd.Transaction = transaction;
-                    cmd.CommandText = @"
-                    INSERT INTO ""Transaction""
-                        (TransactionId, Subtotal, Cash, DiscountPercent, DiscountAmount, ChangeAmt, Total, Date, Uid)
-                    VALUES
-                        (@TransactionId, @Subtotal, @Cash, @DiscountPercent, @DiscountAmount, @ChangeAmt, @Total, @Date, @Uid)";
-
-                    cmd.Parameters.AddWithValue("@TransactionId", transactionId);
-                    cmd.Parameters.AddWithValue("@Subtotal", subtotal);
-                    cmd.Parameters.AddWithValue("@Cash", cash);
-                    cmd.Parameters.AddWithValue("@DiscountPercent", discountPercent);
-                    cmd.Parameters.AddWithValue("@DiscountAmount", discountAmount);
-                    cmd.Parameters.AddWithValue("@ChangeAmt", change);
-                    cmd.Parameters.AddWithValue("@Total", total);
-                    cmd.Parameters.AddWithValue("@Date", currentDate);
-                    cmd.Parameters.AddWithValue("@Uid", UserSession.SessionUID);
-
-                    cmd.ExecuteNonQuery();
+                    var tuple = await SheetsRepo.FindRowByAsync("Product", "Name", name);
+                    int prow1 = tuple.Item1;
+                    DataRow prow = tuple.Item2;
+                    productId = (prow != null) ? ToInt(prow["Id"]) : 0;
                 }
+                decimal price = ToDec(r["Price"]);
+                items.Add(new CartItem { ProductId = productId, Name = name, Quantity = qty, Price = price });
+            }
 
-                // Insertar items de la orden
-                using (var itemCmd = con.CreateCommand())
+            // 2b) Merge items para no actualizar stock repetido
+            //     Clave de agrupación simple y compatible (string)
+            var merged = items
+                .GroupBy(x => (x.ProductId != 0 ? ("ID:" + x.ProductId) : ("NAME:" + (x.Name ?? ""))).ToLowerInvariant())
+                .Select(g =>
                 {
-                    itemCmd.Transaction = transaction;
-                    itemCmd.CommandText = @"
-                    INSERT INTO Orders (TransactionId, Name, Price, Quantity)
-                    VALUES (@TransactionId, @Name, @Price, @Quantity)";
-
-                    foreach (var item in listBox.Items)
+                    var first = g.First();
+                    return new CartItem
                     {
-                        var parts = item.ToString().Split(new[] { " x ", " - $" }, StringSplitOptions.None);
-                        var quantity = int.Parse(parts[0]);
-                        var name = parts[1];
-                        var price = decimal.Parse(parts[2]);
+                        ProductId = first.ProductId,
+                        Name = first.Name,
+                        Quantity = g.Sum(x => x.Quantity),
+                        Price = first.Price
+                    };
+                })
+                .ToList();
 
-                        itemCmd.Parameters.Clear();
-                        itemCmd.Parameters.AddWithValue("@TransactionId", transactionId);
-                        itemCmd.Parameters.AddWithValue("@Name", name);
-                        itemCmd.Parameters.AddWithValue("@Price", price);
-                        itemCmd.Parameters.AddWithValue("@Quantity", quantity);
-
-                        itemCmd.ExecuteNonQuery();
-                    }
-                }
-
-                // Limpiar carrito
-                using (var deleteCmd = con.CreateCommand())
-                {
-                    deleteCmd.Transaction = transaction;
-                    deleteCmd.CommandText = "DELETE FROM Cart WHERE Uid = @Uid";
-                    deleteCmd.Parameters.AddWithValue("@Uid", UserSession.SessionUID);
-                    deleteCmd.ExecuteNonQuery();
-                }
-
-                transaction.Commit();
-            }
-            catch
+            // 3) Descontar stock y registrar History
+            foreach (var it in merged)
             {
-                transaction.Rollback();
-                throw;
+                if (it.ProductId == 0) continue;
+
+                var tuple = await SheetsRepo.FindRowByAsync("Product", "Id", it.ProductId.ToString());
+                int row1 = tuple.Item1;
+                DataRow prow = tuple.Item2;
+                if (row1 == 0 || prow == null) continue;
+
+                int oldStock = ToInt(prow["Stock"]);
+                int newStock = Math.Max(0, oldStock - it.Quantity);
+
+                await SheetsRepo.UpdateRowAsync("Product", row1, new object[]
+                {
+                    ToInt(prow["Id"]),
+                    prow["Name"]?.ToString() ?? "",
+                    ToInt(prow["Price"]),
+                    newStock,
+                    ToInt(prow["Unit"]),
+                    prow["Category"]?.ToString() ?? ""
+                });
+
+                // History: salida negativa
+                int histId = await SheetsRepo.NextIdAsync("History", "Id");
+                string nowIso = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+                await SheetsRepo.AppendRowAsync("History", new object[] { histId, it.ProductId, -it.Quantity, nowIso });
             }
+
+            // 4) Cabecera Transaction
+            await SheetsRepo.AppendRowAsync("Transaction", new object[]
+            {
+                transactionId,
+                subtotal,
+                cash,
+                discountPercent,
+                discountAmount,
+                change,
+                total,
+                currentDate.ToString("yyyy-MM-dd HH:mm:ss"),
+                uid
+            });
+
+            // 5) Líneas Orders
+            foreach (var it in items)
+            {
+                int orderId = await SheetsRepo.NextIdAsync("Orders", "Id");
+                await SheetsRepo.AppendRowAsync("Orders", new object[] { orderId, transactionId, it.Name, it.Price, it.Quantity });
+            }
+
+            // 6) Limpiar carrito (descendente)
+            foreach (var pair in myCartRows.OrderByDescending(x => x.Item1))
+            {
+                int row1 = pair.Item1;
+                await SheetsRepo.DeleteRowAsync("Cart", row1 - 1); // API es 0-based incluyendo header
+            }
+        }
+
+        // helpers
+        private static int ToInt(object v)
+        {
+            int x;
+            return int.TryParse(v?.ToString(), out x) ? x : 0;
+        }
+
+        private static decimal ToDec(object v)
+        {
+            if (v == null) return 0m;
+            var s = v.ToString().Trim().Replace("$", "").Replace(",", "");
+            decimal d;
+            if (decimal.TryParse(s, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out d))
+                return d;
+            if (decimal.TryParse(s, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.CurrentCulture, out d))
+                return d;
+            return 0m;
+        }
+
+        private class CartItem
+        {
+            public int ProductId;
+            public string Name;
+            public int Quantity;
+            public decimal Price;
         }
     }
 }
-

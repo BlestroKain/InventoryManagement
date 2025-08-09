@@ -1,129 +1,132 @@
 using System;
+using System.Data;
+using System.Threading.Tasks;
 using System.Windows.Forms;
-using Microsoft.Data.Sqlite;
-using System.Security.Cryptography;
 
-namespace InventoryApp.Data
+namespace RapiMesa.Data
 {
     class AccountManager
     {
         private const int SaltSize = 16; // 128 bits
         private const int KeySize = 32; // 256 bits
-        private const int Iterations = 10000;
+        private const int Iter = 10000;
 
-        private static string HashPassword(string password)
+        // ======= API PÚBLICA (async) =======
+
+        // Valida credenciales; devuelve Uid (>0 si OK, 0 si falla)
+        public async Task<int> ValidateUserCredentialsAsync(string username, string password)
         {
-            using var rng = RandomNumberGenerator.Create();
-            var salt = new byte[SaltSize];
-            rng.GetBytes(salt);
-            using var pbkdf2 = new Rfc2898DeriveBytes(password, salt, Iterations, HashAlgorithmName.SHA256);
-            var hash = pbkdf2.GetBytes(KeySize);
-            return $"{Convert.ToBase64String(salt)}:{Convert.ToBase64String(hash)}";
-        }
-
-        private static bool VerifyPassword(string password, string storedHash)
-        {
-            var parts = storedHash.Split(':');
-            if (parts.Length != 2) return false;
-
-            var salt = Convert.FromBase64String(parts[0]);
-            var expectedHash = Convert.FromBase64String(parts[1]);
-            using var pbkdf2 = new Rfc2898DeriveBytes(password, salt, Iterations, HashAlgorithmName.SHA256);
-            var computedHash = pbkdf2.GetBytes(KeySize);
-
-            return FixedTimeEquals(expectedHash, computedHash);
-        }
-
-        // Comparison en tiempo constante para evitar timing attacks
-        private static bool FixedTimeEquals(byte[] a, byte[] b)
-        {
-            if (a == null || b == null || a.Length != b.Length) return false;
-            int diff = 0;
-            for (int i = 0; i < a.Length; i++)
+            var dt = await SheetsRepo.ReadTableAsync("Account");
+            foreach (DataRow r in dt.Rows)
             {
-                diff |= a[i] ^ b[i];
-            }
-            return diff == 0;
-        }
+                var user = r["Username"]?.ToString();
+                if (!string.Equals(user, username, StringComparison.OrdinalIgnoreCase)) continue;
 
-        // Valida credenciales de usuario
-        public int ValidateUserCredentials(string username, string password)
-        {
-            int uid = 0;
-            using (var con = ConnectionManager.GetConnection())
-            using (var cmd = con.CreateCommand())
-            {
-                // 1) Traigo el hash almacenado
-                cmd.CommandText = "SELECT Uid, Password FROM Account WHERE Username = @Username";
-                cmd.Parameters.AddWithValue("@Username", username);
-
-                using var reader = cmd.ExecuteReader();
-                if (reader.Read())
+                var stored = r["Password"]?.ToString() ?? "";
+                if (VerifyPassword(password, stored))
                 {
-                    var storedHash = reader.GetString(1);
-                    // 2) Verifico contra el hash
-                    if (VerifyPassword(password, storedHash))
-                    {
-                        uid = reader.GetInt32(0);
-                    }
+                    // OK
+                    return ToInt(r["Uid"]);
                 }
+
+                // (opcional) compatibilidad: si era texto plano, acepta una vez y re-hashea
+                if (!stored.Contains(":") && stored == password)
+                {
+                    int uid = ToInt(r["Uid"]);
+                    int row1 = FindRow1(dt, r); // fila 1-based (incluye header)
+                    await SheetsRepo.UpdateRowAsync("Account", row1,
+                        new object[] { uid, user, HashPassword(password) });
+                    return uid;
+                }
+
+                return 0; // usuario encontrado pero password no coincide
             }
-            return uid;
+            return 0; // no existe
         }
 
-
-        // Registra un nuevo usuario
-        public void RegisterUser(string username, string password)
+        // Registra usuario (con hash); muestra mensajes como antes
+        public async Task RegisterUserAsync(string username, string password)
         {
-            if (IsUsernameExists(username))
+            if (await IsUsernameExistsAsync(username))
             {
                 MessageBox.Show(
                     "Username already exists. Please choose a different username.",
                     "Registration Error",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error
-                );
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
-            using (var con = ConnectionManager.GetConnection())
-            using (var cmd = con.CreateCommand())
-            {
-                cmd.CommandText = "INSERT INTO Account (Username, Password) VALUES (@Username, @Password)";
-                cmd.Parameters.AddWithValue("@Username", username);
-                cmd.Parameters.AddWithValue("@Password", HashPassword(password));
+            int uid = await SheetsRepo.NextIdAsync("Account", "Uid");
+            await SheetsRepo.AppendRowAsync("Account",
+                new object[] { uid, username, HashPassword(password) });
 
-                int rows = cmd.ExecuteNonQuery();
-                if (rows > 0)
+            MessageBox.Show(
+                "Registration successful!",
+                "Registration",
+                MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        // Comprueba si ya existe el username
+        public async Task<bool> IsUsernameExistsAsync(string username)
+        {
+            var dt = await SheetsRepo.ReadTableAsync("Account");
+            foreach (DataRow r in dt.Rows)
+            {
+                if (string.Equals(r["Username"]?.ToString(), username, StringComparison.OrdinalIgnoreCase))
+                    return true;
+            }
+            return false;
+        }
+
+        // ======= UTILIDADES =======
+
+        private static int ToInt(object v) =>
+            v == null ? 0 : int.TryParse(v.ToString(), out var x) ? x : 0;
+
+        private static int FindRow1(DataTable dt, DataRow row)
+        {
+            // Fila 1 es encabezado; DataRow index 0 ? fila 2
+            int idx = dt.Rows.IndexOf(row);
+            return idx + 2;
+        }
+
+        // Hash PBKDF2
+        private static string HashPassword(string password)
+        {
+            using (var rng = System.Security.Cryptography.RandomNumberGenerator.Create())
+            {
+                var salt = new byte[SaltSize];
+                rng.GetBytes(salt);
+                using (var pbkdf2 = new System.Security.Cryptography.Rfc2898DeriveBytes(
+                    password, salt, Iter, System.Security.Cryptography.HashAlgorithmName.SHA256))
                 {
-                    MessageBox.Show("Registration successful!", "Registration", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
-                else
-                {
-                    MessageBox.Show("Failed to register. Please try again.", "Registration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    var hash = pbkdf2.GetBytes(KeySize);
+                    return $"{Convert.ToBase64String(salt)}:{Convert.ToBase64String(hash)}";
                 }
             }
         }
 
-        // Verifica si ya existe el username
-        private bool IsUsernameExists(string username)
+        private static bool VerifyPassword(string password, string stored)
         {
-            bool exists = false;
+            var parts = stored.Split(':');
+            if (parts.Length != 2) return false;
+            var salt = Convert.FromBase64String(parts[0]);
+            var expected = Convert.FromBase64String(parts[1]);
 
-            using (var con = ConnectionManager.GetConnection())
-            using (var cmd = con.CreateCommand())
+            using (var pbkdf2 = new System.Security.Cryptography.Rfc2898DeriveBytes(
+                password, salt, Iter, System.Security.Cryptography.HashAlgorithmName.SHA256))
             {
-                cmd.CommandText = "SELECT COUNT(*) FROM Account WHERE Username = @Username";
-                cmd.Parameters.AddWithValue("@Username", username);
-
-                var result = cmd.ExecuteScalar();
-                if (result != null && result != DBNull.Value)
-                {
-                    exists = Convert.ToInt32(result) > 0;
-                }
+                var computed = pbkdf2.GetBytes(KeySize);
+                return FixedTimeEquals(expected, computed);
             }
+        }
 
-            return exists;
+        private static bool FixedTimeEquals(byte[] a, byte[] b)
+        {
+            if (a == null || b == null || a.Length != b.Length) return false;
+            int diff = 0;
+            for (int i = 0; i < a.Length; i++) diff |= a[i] ^ b[i];
+            return diff == 0;
         }
     }
 }

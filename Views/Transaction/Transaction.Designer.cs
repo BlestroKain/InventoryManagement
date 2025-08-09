@@ -1,4 +1,4 @@
-﻿namespace InventoryApp.InventoryApp.dlg
+﻿namespace RapiMesa.Views.Transaction
 {
     partial class Transaction
     {

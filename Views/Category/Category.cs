@@ -1,9 +1,10 @@
-﻿using System.Data;
-using System;
+﻿using System;
+using System.Data;
+using System.Threading.Tasks;
 using System.Windows.Forms;
-using InventoryApp.Data;
+using RapiMesa.Data;
 
-namespace InventoryApp.InventoryApp.Views
+namespace RapiMesa.InventoryApp.Views
 {
     public partial class Category : Form
     {
@@ -13,28 +14,36 @@ namespace InventoryApp.InventoryApp.Views
         {
             InitializeComponent();
             categoryManager = new CategoryManager();
-            RefreshGrid();
+
+            // Cargar asíncrono cuando el form se muestra
+            this.Shown -= Category_Shown;
+            this.Shown += Category_Shown;
         }
 
-        private void RefreshGrid()
+        private async void Category_Shown(object sender, EventArgs e)
         {
-            dataGridView1.DataSource = categoryManager.GetCategories();
+            await RefreshGridAsync();
+        }
+
+        private async Task RefreshGridAsync()
+        {
+            dataGridView1.DataSource = await categoryManager.GetCategoriesAsync();
         }
 
         // ADD BUTTON
-        private void button1_Click(object sender, EventArgs e)
+        private async void button1_Click(object sender, EventArgs e)
         {
             using (var dlg = new CatDialog(categoryManager))
             {
                 if (dlg.ShowDialog() == DialogResult.OK)
                 {
-                    RefreshGrid();
+                    await RefreshGridAsync();
                 }
             }
         }
 
         // UPDATE BUTTON
-        private void button2_Click(object sender, EventArgs e)
+        private async void button2_Click(object sender, EventArgs e)
         {
             if (dataGridView1.SelectedRows.Count == 0)
             {
@@ -47,7 +56,6 @@ namespace InventoryApp.InventoryApp.Views
                 return;
             }
 
-            // Leemos directamente del DataRowView ligado
             var drv = dataGridView1.SelectedRows[0].DataBoundItem as DataRowView;
             if (drv == null)
             {
@@ -65,7 +73,7 @@ namespace InventoryApp.InventoryApp.Views
                 {
                     if (dlg.ShowDialog() == DialogResult.OK)
                     {
-                        RefreshGrid();
+                        await RefreshGridAsync();
                     }
                 }
             }
@@ -81,7 +89,7 @@ namespace InventoryApp.InventoryApp.Views
         }
 
         // DELETE BUTTON
-        private void button3_Click(object sender, EventArgs e)
+        private async void button3_Click(object sender, EventArgs e)
         {
             if (dataGridView1.SelectedRows.Count == 0)
             {
@@ -111,8 +119,8 @@ namespace InventoryApp.InventoryApp.Views
                     MessageBoxIcon.Warning
                 ) == DialogResult.Yes)
             {
-                categoryManager.DeleteCategory(id);
-                RefreshGrid();
+                await categoryManager.DeleteCategoryAsync(id);
+                await RefreshGridAsync();
             }
         }
     }

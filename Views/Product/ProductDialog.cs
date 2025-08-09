@@ -1,10 +1,10 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Threading.Tasks;
 using System.Windows.Forms;
-using InventoryApp.Data;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using RapiMesa.Data;
 
-namespace InventoryApp
+namespace RapiMesa
 {
     public partial class ProductDialog : Form
     {
@@ -18,11 +18,11 @@ namespace InventoryApp
             productManager = manager ?? throw new ArgumentNullException(nameof(manager));
             itemId = 0;
 
-            // Primero cargo categorías
-            CategoryCmb.Items.Clear();
-            CategoryCmb.Items.AddRange(productManager.GetCategoryItems());
-
             Text = "Add New Product";
+
+            // Cargar categorías cuando el form ya está mostrado (permite await)
+            this.Shown -= ProductDialog_Shown;
+            this.Shown += ProductDialog_Shown;
         }
 
         // Constructor para editar
@@ -40,30 +40,52 @@ namespace InventoryApp
             productManager = manager ?? throw new ArgumentNullException(nameof(manager));
             itemId = id;
 
-            // Primero cargo categorías
-            CategoryCmb.Items.Clear();
-            CategoryCmb.Items.AddRange(productManager.GetCategoryItems());
-
-            // Luego asigno valores a los controles
+            // Seteo valores primero
             NameTxt.Text = name ?? "";
             PriceTxt.Text = price.ToString();
             StockTxt.Text = stock.ToString();
             UnitTxt.Text = unit.ToString();
-
-            // Selecciono la categoría si existe, sino dejo el texto
-            if (CategoryCmb.Items.Contains(category))
-            {
-                CategoryCmb.SelectedItem = category;
-            }
-            else
-            {
-                CategoryCmb.Text = category ?? "";
-            }
+            CategoryCmb.Text = category ?? "";
 
             Text = "Edit Product";
+
+            // Cargar categorías al mostrar y luego seleccionar la existente
+            this.Shown -= ProductDialog_Shown;
+            this.Shown += ProductDialog_Shown;
         }
 
-        // Validación sencilla de que todos los campos estén completos y numéricos
+        // === Carga de categorías (async al mostrar) ===
+        private async void ProductDialog_Shown(object sender, EventArgs e)
+        {
+            try
+            {
+                await LoadCategoriesAsync();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error loading categories:\r\n" + ex.Message,
+                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private async Task LoadCategoriesAsync()
+        {
+            CategoryCmb.Items.Clear();
+            var items = await productManager.GetCategoryItemsAsync(); // <- Sheets
+            if (items != null && items.Length > 0)
+            {
+                CategoryCmb.Items.AddRange(items);
+            }
+
+            // Si venimos en modo edición y ya había texto, intenta seleccionarlo
+            var current = CategoryCmb.Text?.Trim();
+            if (!string.IsNullOrEmpty(current) && CategoryCmb.Items.Contains(current))
+            {
+                CategoryCmb.SelectedItem = current;
+            }
+        }
+
+        // === Validaciones locales ===
         private bool ValidateAll()
         {
             errorProvider1.Clear();
@@ -98,8 +120,8 @@ namespace InventoryApp
             return ok;
         }
 
-        // Guarda o actualiza el producto
-        private void SaveProduct()
+        // === Guardar (async) ===
+        private async Task SaveProductAsync()
         {
             if (!ValidateAll()) return;
 
@@ -109,26 +131,35 @@ namespace InventoryApp
             var unit = Convert.ToInt32(UnitTxt.Text);
             var category = CategoryCmb.Text.Trim();
 
-            // Si es categoría nueva, la inserto
-            if (CategoryCmb.SelectedIndex == -1)
+            try
             {
-                productManager.InsertCategory(category);
-            }
+                // Si es categoría nueva, la inserto (evita duplicados en manager)
+                if (CategoryCmb.SelectedIndex == -1 && !string.IsNullOrWhiteSpace(category))
+                {
+                    await productManager.InsertCategoryAsync(category); // <- Sheets
+                }
 
-            if (itemId == 0)
-            {
-                productManager.InsertProduct(name, price, stock, unit, category);
-            }
-            else
-            {
-                productManager.UpdateProduct(itemId, name, price, stock, unit, category);
-            }
+                if (itemId == 0)
+                {
+                    await productManager.InsertProductAsync(name, price, stock, unit, category); // <- Sheets
+                }
+                else
+                {
+                    await productManager.UpdateProductAsync(itemId, name, price, stock, unit, category); // <- Sheets
+                }
 
-            DialogResult = DialogResult.OK;
-            Close();
+                DialogResult = DialogResult.OK;
+                Close();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error saving product:\r\n" + ex.Message,
+                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
-        private void button1_Click(object sender, EventArgs e) => SaveProduct();
+        // Botones
+        private async void button1_Click(object sender, EventArgs e) => await SaveProductAsync();
 
         private void button2_Click(object sender, EventArgs e)
         {
@@ -136,7 +167,7 @@ namespace InventoryApp
             Close();
         }
 
-        // Tecla Enter para avanzar formulario
+        // Enter para avanzar
         private void textBox1_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (e.KeyChar == (char)Keys.Enter && !string.IsNullOrWhiteSpace(NameTxt.Text))
@@ -169,15 +200,13 @@ namespace InventoryApp
                 e.Handled = true;
             }
         }
-        private void comboBox1_KeyPress(object sender, KeyPressEventArgs e)
+        private async void comboBox1_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (e.KeyChar == (char)Keys.Enter && !string.IsNullOrWhiteSpace(CategoryCmb.Text))
             {
-                SaveProduct();
                 e.Handled = true;
+                await SaveProductAsync();
             }
         }
-
-       
     }
 }

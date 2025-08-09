@@ -1,46 +1,72 @@
 ﻿using System;
 using System.Data;
+using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Forms;
-using Microsoft.Data.Sqlite;
+using RapiMesa.Data;
+using RapiMesa.Views.Transaction;
 
-namespace InventoryApp.InventoryApp.dlg
+namespace RapiMesa.Views.Transaction
 {
     public partial class Transaction : Form
     {
         public Transaction()
         {
             InitializeComponent();
-            DisplayTransaction();
+
+            this.Shown -= Transaction_Shown;
+            this.Shown += Transaction_Shown;
         }
 
-        // FETCH DATA FROM "Transaction" TABLE
-        private void DisplayTransaction()
+        private async void Transaction_Shown(object sender, EventArgs e)
         {
-            int currentUID = UserSession.SessionUID;
+            await DisplayTransactionAsync();
+        }
 
-            using (SqliteConnection con = ConnectionManager.GetConnection())
+        // FETCH DATA FROM "Transaction" SHEET
+        private async Task DisplayTransactionAsync()
+        {
+            try
             {
-                using (SqliteCommand cmd = new SqliteCommand(
-                    @"SELECT 
-                        Date,
-                        Subtotal,
-                        DiscountPercent,
-                        DiscountAmount,
-                        Total,
-                        ChangeAmt AS [Change],
-                        TransactionId
-                      FROM ""Transaction""
-                     WHERE Uid = @Uid", con))
-                {
-                    cmd.Parameters.AddWithValue("@Uid", currentUID);
+                int currentUID = UserSession.SessionUID;
 
-                    using (SqliteDataReader reader = cmd.ExecuteReader())
+                DataTable all = await SheetsRepo.ReadTableAsync("Transaction"); // columnas: TransactionId, Subtotal, Cash, DiscountPercent, DiscountAmount, ChangeAmt, Total, Date, Uid
+
+                // Filtrar por Uid
+                var dt = all.Clone();
+                foreach (DataRow r in all.Rows)
+                {
+                    if (int.TryParse(r["Uid"]?.ToString(), out var uid) && uid == currentUID)
                     {
-                        DataTable dt = new DataTable();
-                        dt.Load(reader);
-                        dataGridView1.DataSource = dt;
+                        dt.Rows.Add(r.ItemArray);
                     }
                 }
+
+                // Reordenar/renombrar columnas para que coincida con tu grid original
+                var view = dt.DefaultView;
+                // Si quieres orden por fecha desc:
+                // view.Sort = "Date DESC";
+                var show = view.ToTable(false,
+                    "Date",
+                    "Subtotal",
+                    "DiscountPercent",
+                    "DiscountAmount",
+                    "Total",
+                    "ChangeAmt",       // renombramos en el grid para mostrar "Change"
+                    "TransactionId"
+                );
+
+                dataGridView1.AutoGenerateColumns = true;
+                dataGridView1.DataSource = show;
+
+                // Opcional: renombrar encabezado "ChangeAmt" -> "Change"
+                if (dataGridView1.Columns["ChangeAmt"] != null)
+                    dataGridView1.Columns["ChangeAmt"].HeaderText = "Change";
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error loading transactions:\r\n" + ex.Message,
+                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -49,11 +75,13 @@ namespace InventoryApp.InventoryApp.dlg
         {
             if (dataGridView1.SelectedRows.Count > 0)
             {
-                string id = dataGridView1.SelectedRows[0]
-                              .Cells["TransactionId"].Value.ToString();
-                using (var dlg = new Details(id))
+                string id = dataGridView1.SelectedRows[0].Cells["TransactionId"].Value?.ToString() ?? "";
+                if (!string.IsNullOrWhiteSpace(id))
                 {
-                    dlg.ShowDialog();
+                    using (var dlg = new Details(id))
+                    {
+                        dlg.ShowDialog();
+                    }
                 }
             }
         }

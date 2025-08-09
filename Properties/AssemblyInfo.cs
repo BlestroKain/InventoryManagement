@@ -1,36 +1,35 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Resources;
 
-// General Information about an assembly is controlled through the following
-// set of attributes. Change these attribute values to modify the information
-// associated with an assembly.
-[assembly: AssemblyTitle("InventoryApp")]
-[assembly: AssemblyDescription("")]
-[assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("InventoryApp")]
-[assembly: AssemblyCopyright("Copyright ©  2023")]
-[assembly: AssemblyTrademark("")]
+// Metadatos
+[assembly: AssemblyTitle("RapiMesa POS")]
+[assembly: AssemblyDescription("Punto de venta e inventario con backend en Google Sheets/SQLite.")]
+[assembly: AssemblyCompany("GauchoLoco Entertaiment")]
+[assembly: AssemblyProduct("RapiMesa")]
+[assembly: AssemblyTrademark("RapiMesa")]
 [assembly: AssemblyCulture("")]
+[assembly: NeutralResourcesLanguage("es-CO")]
 
-// Setting ComVisible to false makes the types in this assembly not visible
-// to COM components.  If you need to access a type in this assembly from
-// COM, set the ComVisible attribute to true on that type.
+// Visibilidad COM
 [assembly: ComVisible(false)]
-
-// The following GUID is for the ID of the typelib if this project is exposed to COM
 [assembly: Guid("c19bd3aa-de1f-4c6e-b1da-114af43cbdb9")]
 
-// Version information for an assembly consists of the following four values:
-//
-//      Major Version
-//      Minor Version
-//      Build Number
-//      Revision
-//
-// You can specify all the values or you can default the Build and Revision Numbers
-// by using the '*' as shown below:
-// [assembly: AssemblyVersion("1.0.*")]
+// Cumplimiento CLS
+[assembly: CLSCompliant(true)]
+
+// Versionado
+// Mantén AssemblyVersion estable para compatibilidad binaria.
+// Sube AssemblyFileVersion en cada entrega.
+// InformationalVersion para SemVer (puede incluir sufijos y metadatos).
 [assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyFileVersion("1.0.0.0")]
+[assembly: AssemblyFileVersion("1.2.3.0")]
+[assembly: AssemblyInformationalVersion("1.2.3")]
+
+// Copyright (ajusta el año)
+[assembly: AssemblyCopyright("© 2025 GauchoLoco Entertaiment")]
+
+// (Opcional) Si tienes un proyecto de tests y quieres ver internals
+// [assembly: InternalsVisibleTo("RapiMesa.Tests")]

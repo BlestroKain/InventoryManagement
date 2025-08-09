@@ -1,4 +1,4 @@
-﻿namespace InventoryApp.InventoryApp
+﻿namespace RapiMesa
 {
     partial class MainView
     {

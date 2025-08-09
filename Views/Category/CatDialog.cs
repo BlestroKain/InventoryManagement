@@ -1,11 +1,11 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Data;
+using System.Threading.Tasks;
 using System.Windows.Forms;
-using InventoryApp.Data;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using RapiMesa.Data;
 
-namespace InventoryApp
+namespace RapiMesa
 {
     public partial class CatDialog : Form
     {
@@ -34,11 +34,11 @@ namespace InventoryApp
             textBox2.Validating += textBox2_Validating;
         }
 
-        // Validates input and duplicates
-        private bool ValidateAll()
+        // === Validación async (incluye duplicados en Google Sheets) ===
+        private async Task<bool> ValidateAllAsync()
         {
             errorProvider1.Clear();
-            var name = textBox2.Text.Trim();
+            var name = (textBox2.Text ?? "").Trim();
 
             if (string.IsNullOrWhiteSpace(name))
             {
@@ -46,12 +46,14 @@ namespace InventoryApp
                 return false;
             }
 
-            // Check duplicates
-            var dt = categoryManager.GetCategories();
+            // Verificar duplicados en la hoja "Category"
+            var dt = await categoryManager.GetCategoriesAsync();
             foreach (DataRow row in dt.Rows)
             {
                 var existingName = row["CategoryItem"]?.ToString();
-                var existingId = Convert.ToInt32(row["Id"]);
+                int existingId = 0;
+                int.TryParse(row["Id"]?.ToString(), out existingId);
+
                 if (string.Equals(existingName, name, StringComparison.OrdinalIgnoreCase)
                     && (itemId == 0 || existingId != itemId))
                 {
@@ -65,7 +67,6 @@ namespace InventoryApp
 
         private void textBox2_Validating(object sender, CancelEventArgs e)
         {
-            // simple non-empty check on leave
             if (string.IsNullOrWhiteSpace(textBox2.Text))
             {
                 errorProvider1.SetError(textBox2, "Category name is required.");
@@ -78,33 +79,50 @@ namespace InventoryApp
             }
         }
 
-        // SAVE or UPDATE
-        private void SaveCategory()
+        // === Guardar / Actualizar (async) ===
+        private async Task SaveCategoryAsync()
         {
-            if (!ValidateAll()) return;
+            if (!await ValidateAllAsync()) return;
 
             var name = textBox2.Text.Trim();
-            if (itemId == 0)
-            {
-                categoryManager.AddCategory(name);
-            }
-            else
-            {
-                categoryManager.UpdateCategory(itemId, name);
-            }
 
-            DialogResult = DialogResult.OK;
-            Close();
+            try
+            {
+                if (itemId == 0)
+                {
+                    await categoryManager.AddCategoryAsync(name);
+                }
+                else
+                {
+                    await categoryManager.UpdateCategoryAsync(itemId, name);
+                }
+
+                DialogResult = DialogResult.OK;
+                Close();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "Error saving category:\r\n" + ex.Message,
+                    "Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error
+                );
+            }
         }
 
-        private void button1_Click(object sender, EventArgs e) => SaveCategory();
+        // SAVE or UPDATE
+        private async void button1_Click(object sender, EventArgs e)
+        {
+            await SaveCategoryAsync();
+        }
 
-        private void textBox2_KeyPress(object sender, KeyPressEventArgs e)
+        private async void textBox2_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (e.KeyChar == (char)Keys.Enter)
             {
-                SaveCategory();
                 e.Handled = true;
+                await SaveCategoryAsync();
             }
         }
 

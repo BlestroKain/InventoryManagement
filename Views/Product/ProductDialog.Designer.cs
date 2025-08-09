@@ -1,4 +1,4 @@
-﻿namespace InventoryApp
+﻿namespace RapiMesa
 {
     partial class ProductDialog
     {

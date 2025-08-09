@@ -1,8 +1,10 @@
-﻿using System.Data;
+﻿using System;
+using System.Data;
+using System.Threading.Tasks;
 using System.Windows.Forms;
-using Microsoft.Data.Sqlite;
+using RapiMesa.Data;
 
-namespace InventoryApp.InventoryApp.dlg
+namespace RapiMesa.InventoryApp.dlg
 {
     public partial class History : Form
     {
@@ -12,32 +14,52 @@ namespace InventoryApp.InventoryApp.dlg
         {
             InitializeComponent();
             productId = id;
-            DisplayHistory();
+
+            // Cargar cuando el form ya está visible (para poder usar await)
+            this.Shown -= History_Shown;
+            this.Shown += History_Shown;
         }
 
-        // FETCH DATA FROM HISTORY TABLE
-        private void DisplayHistory()
+        private async void History_Shown(object sender, EventArgs e)
         {
-            using (SqliteConnection con = ConnectionManager.GetConnection())
-            {
-                // la conexión ya viene abierta desde ConnectionManager
-                using (SqliteCommand cmd = con.CreateCommand())
-                {
-                    cmd.CommandText = @"
-                        SELECT ProductID,
-                               [Added Stocks],
-                               [Date]
-                          FROM History
-                         WHERE ProductID = @id";
-                    cmd.Parameters.AddWithValue("@id", productId);
+            await DisplayHistoryAsync();
+        }
 
-                    using (SqliteDataReader reader = cmd.ExecuteReader())
+        // FETCH DATA FROM HISTORY (Google Sheets)
+        private async Task DisplayHistoryAsync()
+        {
+            try
+            {
+                // Leemos toda la hoja History
+                DataTable all = await SheetsRepo.ReadTableAsync("History");
+
+                // Filtramos por ProductID
+                DataTable dt = all.Clone();
+                foreach (DataRow r in all.Rows)
+                {
+                    // ProductID puede venir como string; hacemos parse seguro
+                    int pid = 0;
+                    int.TryParse(r["ProductID"]?.ToString(), out pid);
+                    if (pid == productId)
                     {
-                        DataTable dt = new DataTable();
-                        dt.Load(reader);
-                        dataGridView1.DataSource = dt;
+                        dt.Rows.Add(r.ItemArray);
                     }
                 }
+
+                // (Opcional) ordenar por fecha si la columna Date es ISO (YYYY-MM-DD HH:MM:SS)
+                // dt.DefaultView.Sort = "[Date] DESC";
+                // dt = dt.DefaultView.ToTable();
+
+                dataGridView1.DataSource = dt;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "Error loading history:\r\n" + ex.Message,
+                    "Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error
+                );
             }
         }
     }

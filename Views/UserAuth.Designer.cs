@@ -1,4 +1,4 @@
-﻿namespace InventoryApp.Views
+﻿namespace RapiMesa.Views
 {
     partial class UserAuth
     {

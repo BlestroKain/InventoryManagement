@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Data;
+using System.Threading.Tasks;
 using System.Windows.Forms;
-using InventoryApp.Data;
-using InventoryApp.InventoryApp.dlg;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using RapiMesa.Data;
+using RapiMesa.InventoryApp.dlg;
 
-namespace InventoryApp
+namespace RapiMesa
 {
     public partial class Product : Form
     {
@@ -16,57 +16,66 @@ namespace InventoryApp
             InitializeComponent();
             productManager = new ProductManager();
 
-            LoadProducts();
+            // Carga inicial asíncrona (mejor en Shown que en el ctor)
+            this.Shown -= Product_Shown;
+            this.Shown += Product_Shown;
+
             SetupAddToCartButton();
         }
 
-        private void LoadProducts()
+        private async void Product_Shown(object sender, EventArgs e)
         {
-            dataGridView1.DataSource = productManager.GetProducts();
+            await LoadProductsAsync();
         }
-        // Búsqueda y visualización
-        private void PerformSearch()
+
+        private async Task LoadProductsAsync()
         {
-            DataTable dt = productManager.SearchProducts(textBox1.Text);
+            dataGridView1.DataSource = await productManager.GetProductsAsync();
+        }
+
+        // Búsqueda y visualización
+        private async Task PerformSearchAsync()
+        {
+            DataTable dt = await productManager.SearchProductsAsync(textBox1.Text);
             dataGridView1.DataSource = dt;
         }
 
-        private void button6_Click(object sender, EventArgs e)
+        private async void button6_Click(object sender, EventArgs e)
         {
-            PerformSearch();
+            await PerformSearchAsync();
         }
 
-        private void textBox1_KeyPress(object sender, KeyPressEventArgs e)
+        private async void textBox1_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (e.KeyChar == (char)Keys.Enter)
             {
-                PerformSearch();
+                await PerformSearchAsync();
                 e.Handled = true;
             }
         }
 
-        private void textBox1_TextChanged(object sender, EventArgs e)
+        private async void textBox1_TextChanged(object sender, EventArgs e)
         {
             if (string.IsNullOrWhiteSpace(textBox1.Text))
             {
-                PerformSearch();
+                await PerformSearchAsync(); // tu Search ya maneja vacío → devuelve todo
             }
         }
 
         // INSERT BUTTON
-        private void Add_Click(object sender, EventArgs e)
+        private async void Add_Click(object sender, EventArgs e)
         {
             using (var dlg = new ProductDialog(productManager))
             {
                 if (dlg.ShowDialog() == DialogResult.OK)
                 {
-                    dataGridView1.DataSource = productManager.GetProducts();
+                    await LoadProductsAsync();
                 }
             }
         }
 
         // UPDATE BUTTON
-        private void button2_Click(object sender, EventArgs e)
+        private async void button2_Click(object sender, EventArgs e)
         {
             if (dataGridView1.SelectedRows.Count == 0)
             {
@@ -79,7 +88,6 @@ namespace InventoryApp
                 return;
             }
 
-            // Asumimos que tu DataGridView está ligado a un DataTable/DataView
             var drv = dataGridView1.SelectedRows[0].DataBoundItem as DataRowView;
             if (drv == null)
             {
@@ -99,16 +107,13 @@ namespace InventoryApp
                 int price = Convert.ToInt32(drv["Price"]);
                 int stock = Convert.ToInt32(drv["Stock"]);
                 int unit = Convert.ToInt32(drv["Unit"]);
-                string category = drv["Category"]?.ToString() ?? "";
+                string cat = drv["Category"]?.ToString() ?? "";
 
-                using (var dlg = new ProductDialog(
-                    productManager,
-                    id, name, price, stock, unit, category
-                ))
+                using (var dlg = new ProductDialog(productManager, id, name, price, stock, unit, cat))
                 {
                     if (dlg.ShowDialog() == DialogResult.OK)
                     {
-                        dataGridView1.DataSource = productManager.GetProducts();
+                        await LoadProductsAsync();
                     }
                 }
             }
@@ -124,7 +129,7 @@ namespace InventoryApp
         }
 
         // DELETE BUTTON
-        private void DeleteBtn_Click(object sender, EventArgs e)
+        private async void DeleteBtn_Click(object sender, EventArgs e)
         {
             if (dataGridView1.SelectedRows.Count == 0)
             {
@@ -146,13 +151,13 @@ namespace InventoryApp
                     MessageBoxIcon.Warning
                 ) == DialogResult.Yes)
             {
-                productManager.DeleteProduct(id);
-                dataGridView1.DataSource = productManager.GetProducts();
+                await productManager.DeleteProductAsync(id);
+                await LoadProductsAsync();
             }
         }
 
         // ADD STOCK BUTTON
-        private void AddStockBtn_Click(object sender, EventArgs e)
+        private async void AddStockBtn_Click(object sender, EventArgs e)
         {
             if (dataGridView1.SelectedRows.Count == 0)
             {
@@ -170,7 +175,7 @@ namespace InventoryApp
             {
                 if (dlg.ShowDialog() == DialogResult.OK)
                 {
-                    dataGridView1.DataSource = productManager.GetProducts();
+                    await LoadProductsAsync();
                 }
             }
         }
@@ -196,11 +201,9 @@ namespace InventoryApp
             }
         }
 
-        // Añade columna de botón "Add" al carrito
-        // Añade la columna de botón "Add" si no existe, y engancha al CellClick
+        // Añade la columna de botón "Add" si no existe, y engancha a un ÚNICO handler async
         private void SetupAddToCartButton()
         {
-            // 1) Añade la columna sólo si no existe
             if (dataGridView1.Columns["AddToCart"] == null)
             {
                 var btnCol = new DataGridViewButtonColumn
@@ -214,30 +217,19 @@ namespace InventoryApp
                 dataGridView1.Columns.Add(btnCol);
             }
 
-            // 2) Desuscribe TODO lo anterior
-            dataGridView1.CellContentClick -= DataGridView1_CellClick;
-            dataGridView1.CellClick -= DataGridView1_CellClick;
-
-            // 3) Elige UN sólo evento para manejar el click. 
-            //    Yo recomiendo CellContentClick para botones:
-            dataGridView1.CellContentClick += DataGridView1_CellClick;
+            dataGridView1.CellContentClick -= dataGridView1_CellContentClick;
+            dataGridView1.CellContentClick += dataGridView1_CellContentClick;
         }
 
-
-
-        // EVENTO CLICK DEL BOTÓN EN EL DATAGRID
-        private void DataGridView1_CellClick(object sender, DataGridViewCellEventArgs e)
+        // EVENTO CLICK DEL BOTÓN EN EL DATAGRID (async)
+        private async void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
-            // Solo filas válidas
-            if (e.RowIndex < 0 || e.ColumnIndex < 0) return;
-
-            // Solo el botón "AddToCart"
+            if (e.RowIndex < 0) return;
             if (dataGridView1.Columns[e.ColumnIndex].Name != "AddToCart") return;
 
-            // Leemos directo del DataRowView ligado
             if (!(dataGridView1.Rows[e.RowIndex].DataBoundItem is DataRowView drv)) return;
 
-            string name = drv["Name"].ToString();
+            string name = drv["Name"]?.ToString() ?? "";
             int price = Convert.ToInt32(drv["Price"]);
             int stock = Convert.ToInt32(drv["Stock"]);
 
@@ -248,8 +240,8 @@ namespace InventoryApp
                 return;
             }
 
-            // Esto se ejecuta UNA sola vez por click
-            bool added = ProductManager.AddItemToCart(name, price);
+            // Google Sheets
+            bool added = await ProductManager.AddItemToCartAsync(name, price);
             MessageBox.Show(
                 added ? "Product added to cart." : "Failed to add product.",
                 "Cart",
@@ -257,6 +249,5 @@ namespace InventoryApp
                 MessageBoxIcon.Information
             );
         }
-
     }
 }

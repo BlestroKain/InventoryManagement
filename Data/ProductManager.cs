@@ -1,173 +1,105 @@
-﻿using Microsoft.Data.Sqlite;
+﻿// Data/ProductManagerSheets.cs
 using System;
 using System.Data;
-using System.Collections.Generic;
+using System.Threading.Tasks;
 
-namespace InventoryApp.Data
+namespace RapiMesa.Data
 {
     public class ProductManager
     {
-        // 1) Obtener todos los productos
-        public DataTable GetProducts()
+        public async Task<DataTable> GetProductsAsync() => await SheetsRepo.ReadTableAsync("Product");
+
+        public async Task<DataTable> SearchProductsAsync(string term)
         {
-            using var con = ConnectionManager.GetConnection();
-            using var cmd = con.CreateCommand();
-            cmd.CommandText = "SELECT * FROM Product";
-
-            using var reader = cmd.ExecuteReader();
-            var dt = new DataTable();
-            dt.Load(reader);
-            return dt;
-        }
-
-        // 2) Buscar productos por nombre o categoría
-        public DataTable SearchProducts(string searchTerm)
-        {
-            using var con = ConnectionManager.GetConnection();
-            using var cmd = con.CreateCommand();
-            cmd.CommandText = @"
-                SELECT *
-                  FROM Product
-                 WHERE Name     LIKE @term
-                    OR Category LIKE @term";
-            cmd.Parameters.AddWithValue("@term", $"%{searchTerm}%");
-
-            using var reader = cmd.ExecuteReader();
-            var dt = new DataTable();
-            dt.Load(reader);
-            return dt;
-        }
-
-        // 3) Obtener categorías para ComboBox
-        public string[] GetCategoryItems()
-        {
-            using var con = ConnectionManager.GetConnection();
-            using var cmd = con.CreateCommand();
-            cmd.CommandText = "SELECT CategoryItem FROM Category";
-
-            using var reader = cmd.ExecuteReader();
-            var list = new List<string>();
-            while (reader.Read())
+            var dt = await GetProductsAsync();
+            if (string.IsNullOrWhiteSpace(term)) return dt;
+            term = term.ToLowerInvariant();
+            var filtered = dt.Clone();
+            foreach (DataRow r in dt.Rows)
             {
-                list.Add(reader.GetString(0));
+                var name = r["Name"]?.ToString()?.ToLowerInvariant() ?? "";
+                var cat  = r["Category"]?.ToString()?.ToLowerInvariant() ?? "";
+                if (name.Contains(term) || cat.Contains(term))
+                    filtered.Rows.Add(r.ItemArray);
             }
-            return list.ToArray();
+            return filtered;
         }
 
-        // 4) Insertar un nuevo producto
-        public void InsertProduct(string name, int price, int stock, int unit, string category)
+        public async Task<string[]> GetCategoryItemsAsync()
         {
-            using var con = ConnectionManager.GetConnection();
-            using var cmd = con.CreateCommand();
-            cmd.CommandText = @"
-                INSERT INTO Product (Name, Price, Stock, Unit, Category)
-                VALUES (@name, @price, @stock, @unit, @category)";
-            cmd.Parameters.AddWithValue("@name", name);
-            cmd.Parameters.AddWithValue("@price", price);
-            cmd.Parameters.AddWithValue("@stock", stock);
-            cmd.Parameters.AddWithValue("@unit", unit);
-            cmd.Parameters.AddWithValue("@category", category);
-            cmd.ExecuteNonQuery();
+            var dt = await SheetsRepo.ReadTableAsync("Category");
+            var list = new System.Collections.Generic.HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (DataRow r in dt.Rows)
+                if (!string.IsNullOrWhiteSpace(r["CategoryItem"]?.ToString()))
+                    list.Add(r["CategoryItem"].ToString());
+            return new System.Collections.Generic.List<string>(list).ToArray();
         }
 
-        // 5) Actualizar un producto existente
-        public void UpdateProduct(int id, string name, int price, int stock, int unit, string category)
+        public async Task InsertProductAsync(string name, int price, int stock, int unit, string category)
         {
-            using var con = ConnectionManager.GetConnection();
-            using var cmd = con.CreateCommand();
-            cmd.CommandText = @"
-                UPDATE Product
-                   SET Name     = @name,
-                       Price    = @price,
-                       Stock    = @stock,
-                       Unit     = @unit,
-                       Category = @category
-                 WHERE Id       = @id";
-            cmd.Parameters.AddWithValue("@name", name);
-            cmd.Parameters.AddWithValue("@price", price);
-            cmd.Parameters.AddWithValue("@stock", stock);
-            cmd.Parameters.AddWithValue("@unit", unit);
-            cmd.Parameters.AddWithValue("@category", category);
-            cmd.Parameters.AddWithValue("@id", id);
-            cmd.ExecuteNonQuery();
+            int id = await SheetsRepo.NextIdAsync("Product");
+            await SheetsRepo.AppendRowAsync("Product", new object[] { id, name, price, stock, unit, category });
         }
 
-        // 6) Eliminar un producto
-        public void DeleteProduct(int id)
+        public async Task UpdateProductAsync(int id, string name, int price, int stock, int unit, string category)
         {
-            using var con = ConnectionManager.GetConnection();
-            using var cmd = con.CreateCommand();
-            cmd.CommandText = "DELETE FROM Product WHERE Id = @id";
-            cmd.Parameters.AddWithValue("@id", id);
-            cmd.ExecuteNonQuery();
+            var (row1, _) = await SheetsRepo.FindRowByAsync("Product", "Id", id.ToString());
+            if (row1 == 0) throw new Exception("Product not found");
+            await SheetsRepo.UpdateRowAsync("Product", row1, new object[] { id, name, price, stock, unit, category });
         }
 
-        // 7) Insertar una nueva categoría
-        public void InsertCategory(string categoryItem)
+        public async Task DeleteProductAsync(int id)
         {
-            using var con = ConnectionManager.GetConnection();
-            using var cmd = con.CreateCommand();
-            cmd.CommandText = "INSERT INTO Category (CategoryItem) VALUES (@categoryitem)";
-            cmd.Parameters.AddWithValue("@categoryitem", categoryItem);
-            cmd.ExecuteNonQuery();
+            // row0 = header(0) + (row1-1)
+            var (row1, _) = await SheetsRepo.FindRowByAsync("Product", "Id", id.ToString());
+            if (row1 == 0) return;
+            await SheetsRepo.DeleteRowAsync("Product", row1 - 1);
         }
 
-        // 8) Agregar un ítem al carrito (o actualizar cantidad si ya existe)
-        public static bool AddItemToCart(string name, int price)
+        public async Task InsertCategoryAsync(string categoryItem)
         {
-            using var con = ConnectionManager.GetConnection();
+            // Evitar duplicados
+            var (_, row) = await SheetsRepo.FindRowByAsync("Category", "CategoryItem", categoryItem);
+            if (row != null) return;
+            int id = await SheetsRepo.NextIdAsync("Category");
+            await SheetsRepo.AppendRowAsync("Category", new object[] { id, categoryItem });
+        }
 
-            // 8.1) Verificar si ya está en el carrito para el usuario actual
-            using var selectCmd = con.CreateCommand();
-            selectCmd.CommandText = @"
-                SELECT Quantity, Price
-                  FROM Cart
-                 WHERE Name = @name
-                   AND Uid  = @uid";
-            selectCmd.Parameters.AddWithValue("@name", name);
-            selectCmd.Parameters.AddWithValue("@uid", UserSession.SessionUID);
-
-            using var reader = selectCmd.ExecuteReader();
-            if (reader.Read())
+        // Add al carrito (Uid + Name)
+        public static async Task<bool> AddItemToCartAsync(string name, int price)
+        {
+            int uid = UserSession.SessionUID;
+            // ¿ya existe?
+            var dt = await SheetsRepo.ReadTableAsync("Cart");
+            DataRow found = null; int foundRow1 = 0; int idx = 0;
+            foreach (DataRow r in dt.Rows)
             {
-                var existingQuantity = reader.GetInt32(0);
-                var existingPrice = reader.GetInt32(1);
-                var newQuantity = existingQuantity + 1;
-                reader.Close();
+                idx++;
+                var n = r["Name"]?.ToString();
+                int.TryParse(r["Uid"]?.ToString(), out var u);
+                if (string.Equals(n, name, StringComparison.OrdinalIgnoreCase) && u == uid)
+                {
+                    found = r;
+                    foundRow1 = idx + 1; // header=1
+                    break;
+                }
+            }
 
-                using var updateCmd = con.CreateCommand();
-                updateCmd.CommandText = @"
-                    UPDATE Cart
-                       SET Quantity = @quantity,
-                           Price    = @price
-                     WHERE Name     = @name
-                       AND Uid      = @uid";
-                updateCmd.Parameters.AddWithValue("@quantity", newQuantity);
-                updateCmd.Parameters.AddWithValue("@price", existingPrice);
-                updateCmd.Parameters.AddWithValue("@name", name);
-                updateCmd.Parameters.AddWithValue("@uid", UserSession.SessionUID);
-                updateCmd.ExecuteNonQuery();
+            if (found != null)
+            {
+                int q = Convert.ToInt32(found["Quantity"]);
+                int p = Convert.ToInt32(found["Price"]); // mantenemos precio
+                await SheetsRepo.UpdateRowAsync("Cart", foundRow1,
+                    new object[] { found["Id"], found["ProductId"], uid, name, p, q + 1 });
             }
             else
             {
-                reader.Close();
-
-                using var insertCmd = con.CreateCommand();
-                insertCmd.CommandText = @"
-                    INSERT INTO Cart (ProductId, Uid, Name, Price, Quantity)
-                    VALUES (
-                        (SELECT Id FROM Product WHERE Name = @name),
-                        @uid,
-                        @name,
-                        @price,
-                        1
-                    )";
-                insertCmd.Parameters.AddWithValue("@name", name);
-                insertCmd.Parameters.AddWithValue("@uid", UserSession.SessionUID);
-                insertCmd.Parameters.AddWithValue("@price", price);
-                insertCmd.ExecuteNonQuery();
+                // Buscar ProductId
+                var (prow1, prow) = await SheetsRepo.FindRowByAsync("Product", "Name", name);
+                int pid = prow != null ? Convert.ToInt32(prow["Id"]) : 0;
+                int id = await SheetsRepo.NextIdAsync("Cart");
+                await SheetsRepo.AppendRowAsync("Cart", new object[] { id, pid, uid, name, price, 1 });
             }
-
             return true;
         }
     }

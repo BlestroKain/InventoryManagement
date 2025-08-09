@@ -1,53 +1,34 @@
-﻿using System.Data;
-using Microsoft.Data.Sqlite;
+﻿// Data/CategoryManagerSheets.cs
+using System.Data;
+using System.Threading.Tasks;
 
-namespace InventoryApp.Data
+namespace RapiMesa.Data
 {
     public class CategoryManager
     {
-        // Fetch data from Category
-        public DataTable GetCategories()
+        public async Task<DataTable> GetCategoriesAsync() => await SheetsRepo.ReadTableAsync("Category");
+
+        public async Task AddCategoryAsync(string categoryItem)
         {
-            using var con = ConnectionManager.GetConnection();
-            using var cmd = con.CreateCommand();
-            cmd.CommandText = "SELECT * FROM Category";
-
-            using var reader = cmd.ExecuteReader();
-            var dt = new DataTable();
-            dt.Load(reader);  // Carga columnas y filas desde el reader
-
-            return dt;
+            // valida duplicado
+            var (_, row) = await SheetsRepo.FindRowByAsync("Category", "CategoryItem", categoryItem);
+            if (row != null) return;
+            int id = await SheetsRepo.NextIdAsync("Category");
+            await SheetsRepo.AppendRowAsync("Category", new object[] { id, categoryItem });
         }
 
-        // Add new Category
-        public void AddCategory(string categoryItem)
+        public async Task UpdateCategoryAsync(int id, string categoryItem)
         {
-            using var con = ConnectionManager.GetConnection();
-            using var cmd = con.CreateCommand();
-            cmd.CommandText = "INSERT INTO Category (CategoryItem) VALUES (@categoryitem)";
-            cmd.Parameters.AddWithValue("@categoryitem", categoryItem);
-            cmd.ExecuteNonQuery();
+            var (row1, _) = await SheetsRepo.FindRowByAsync("Category", "Id", id.ToString());
+            if (row1 == 0) return;
+            await SheetsRepo.UpdateRowAsync("Category", row1, new object[] { id, categoryItem });
         }
 
-        // Update Category
-        public void UpdateCategory(int id, string categoryItem)
+        public async Task DeleteCategoryAsync(int id)
         {
-            using var con = ConnectionManager.GetConnection();
-            using var cmd = con.CreateCommand();
-            cmd.CommandText = "UPDATE Category SET CategoryItem = @categoryitem WHERE ID = @id";
-            cmd.Parameters.AddWithValue("@categoryitem", categoryItem);
-            cmd.Parameters.AddWithValue("@id", id);
-            cmd.ExecuteNonQuery();
-        }
-
-        // Delete Category
-        public void DeleteCategory(int id)
-        {
-            using var con = ConnectionManager.GetConnection();
-            using var cmd = con.CreateCommand();
-            cmd.CommandText = "DELETE FROM Category WHERE ID = @id";
-            cmd.Parameters.AddWithValue("@id", id);
-            cmd.ExecuteNonQuery();
+            var (row1, _) = await SheetsRepo.FindRowByAsync("Category", "Id", id.ToString());
+            if (row1 == 0) return;
+            await SheetsRepo.DeleteRowAsync("Category", row1 - 1);
         }
     }
 }

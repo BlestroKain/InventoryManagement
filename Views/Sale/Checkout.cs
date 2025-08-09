@@ -1,25 +1,58 @@
 ﻿using System;
-using InventoryApp.Data;
+using System.Data;
+using System.Threading.Tasks;
 using System.Windows.Forms;
-using InventoryApp.Utility;
+using RapiMesa.Data;
+using RapiMesa.Utility;
 
-namespace InventoryApp
+namespace RapiMesa
 {
     public partial class Checkout : Form
     {
         private readonly PointOfSale pointOfSale;
+        private readonly CartManager cartManager;
+        private readonly decimal subtotal;
+
         public Checkout(decimal totalPrice)
         {
             InitializeComponent();
 
             pointOfSale = new PointOfSale();
-            CartManager cartManager = new CartManager();
+            cartManager = new CartManager();
+            subtotal = totalPrice;
 
-            SubtotalLbl.Text = totalPrice.ToString();
+            SubtotalLbl.Text = subtotal.ToString();
 
+            // Inicializa descuentos y calcula totales iniciales
             pointOfSale.InitializeComboBox(DiscountCmb);
             pointOfSale.CalculateDiscount(SubtotalLbl.Text, DiscountCmb.SelectedItem, DiscountLbl, TotalLbl);
-            cartManager.LoadCartItems(listBox1);
+
+            // Cargar carrito en Shown para poder usar await sin congelar UI
+            this.Shown -= Checkout_Shown;
+            this.Shown += Checkout_Shown;
+        }
+
+        private async void Checkout_Shown(object sender, EventArgs e)
+        {
+            await LoadCartItemsAsync();
+        }
+
+        private async Task LoadCartItemsAsync()
+        {
+            listBox1.Items.Clear();
+            DataTable dt = await cartManager.GetCartItemsAsync();
+
+            foreach (DataRow r in dt.Rows)
+            {
+                string name = r["Name"]?.ToString() ?? "";
+                decimal price = 0;
+                int qty = 0;
+
+                decimal.TryParse(r["Price"]?.ToString(), out price);
+                int.TryParse(r["Quantity"]?.ToString(), out qty);
+
+                listBox1.Items.Add($"{qty} x {name} - ${price}");
+            }
         }
 
         // ON TEXT CHANGED
@@ -49,15 +82,63 @@ namespace InventoryApp
             ChangeEventHandler();
         }
 
-        // INSERT STOCK BUTTON
-        private void button1_Click(object sender, EventArgs e)
+        // INSERT / PROCESS BUTTON
+        private async void button1_Click(object sender, EventArgs e)
         {
-            TransactionIdGenerator transactionIdGenerator = new TransactionIdGenerator();
-            string transactionId = transactionIdGenerator.GenerateTransactionId();
+            // Generar TransactionId
+            var transactionId = new TransactionIdGenerator().GenerateTransactionId();
 
-            if (pointOfSale.ProcessTransaction(SubtotalLbl.Text, CashTxt.Text, DiscountCmb.SelectedItem, transactionId, listBox1))
+            try
             {
-                DialogResult = DialogResult.OK;
+                // Recalcula por si cambió el descuento o cash
+                pointOfSale.CalculateDiscount(SubtotalLbl.Text, DiscountCmb.SelectedItem, DiscountLbl, TotalLbl);
+
+                // Asegura parseo de valores
+                decimal total = 0, cash = 0, discountAmount = 0;
+                double discountPercent = 0, change = 0;
+
+                decimal.TryParse(TotalLbl.Text, out total);
+                decimal.TryParse(CashTxt.Text, out cash);
+                decimal.TryParse(DiscountLbl.Text?.Replace("%",""), out var discParsed);
+                // Si DiscountLbl muestra “15%” usa percent, si muestra “$10” ajusta según tu UI
+                if (DiscountLbl.Text != null && DiscountLbl.Text.Contains("%"))
+                {
+                    discountPercent = (double)discParsed;
+                }
+                else
+                {
+                    decimal.TryParse(DiscountLbl.Text, out discountAmount);
+                }
+                decimal.TryParse(ChangeLbl.Text, out var changeDec);
+                change = (double)changeDec;
+
+                // Procesar transacción (Sheets)
+                // SUGERENCIA: crea PointOfSale.ProcessTransactionAsync que:
+                // - Inserte en Transaction
+                // - Inserte en Orders
+                // - Descuente stock en Product
+                // - Limpie Cart del usuario
+                bool ok = await pointOfSale.ProcessTransactionAsync(
+                    SubtotalLbl.Text,
+                    CashTxt.Text,
+                    DiscountCmb.SelectedItem,
+                    transactionId,
+                    listBox1
+                );
+
+                if (ok)
+                {
+                    DialogResult = DialogResult.OK;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "Error processing transaction:\r\n" + ex.Message,
+                    "Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error
+                );
             }
         }
 

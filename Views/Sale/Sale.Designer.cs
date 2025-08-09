@@ -1,4 +1,4 @@
-﻿namespace InventoryApp.InventoryApp.Views
+﻿namespace RapiMesa.InventoryApp.Views
 {
     partial class Sale
     {

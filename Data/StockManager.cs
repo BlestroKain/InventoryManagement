@@ -1,73 +1,65 @@
-﻿using Microsoft.Data.Sqlite;
-using System;
+﻿using System;
+using System.Data;
+using System.Threading.Tasks;
 
-namespace InventoryApp.Data
+namespace RapiMesa.Data
 {
     public class StockManager
     {
         // 1) Obtener el Id del producto por nombre
-        public int GetProductIdByName(string itemName)
+        public async Task<int> GetProductIdByNameAsync(string itemName)
         {
-            using var con = ConnectionManager.GetConnection();
-            using var cmd = con.CreateCommand();
-            cmd.CommandText = @"
-                SELECT Id
-                  FROM Product
-                 WHERE Name = @itemName";
-            cmd.Parameters.AddWithValue("@itemName", itemName);
-
-            var result = cmd.ExecuteScalar();
-            return (result != null && result != DBNull.Value)
-                ? Convert.ToInt32(result)
-                : 0;
+            var (row1, row) = await SheetsRepo.FindRowByAsync("Product", "Name", itemName);
+            if (row1 == 0 || row == null) return 0;
+            return ToInt(row["Id"]);
         }
 
         // 2) Obtener stock actual por Id
-        public int GetCurrentStockById(int productId)
+        public async Task<int> GetCurrentStockByIdAsync(int productId)
         {
-            using var con = ConnectionManager.GetConnection();
-            using var cmd = con.CreateCommand();
-            cmd.CommandText = @"
-                SELECT Stock
-                  FROM Product
-                 WHERE Id = @productId";
-            cmd.Parameters.AddWithValue("@productId", productId);
-
-            var result = cmd.ExecuteScalar();
-            return (result != null && result != DBNull.Value)
-                ? Convert.ToInt32(result)
-                : 0;
+            var (row1, row) = await SheetsRepo.FindRowByAsync("Product", "Id", productId.ToString());
+            if (row1 == 0 || row == null) return 0;
+            return ToInt(row["Stock"]);
         }
 
         // 3) Actualizar stock del producto
-        public void UpdateStock(int productId, int newStock)
+        public async Task UpdateStockAsync(int productId, int newStock)
         {
-            using var con = ConnectionManager.GetConnection();
-            using var cmd = con.CreateCommand();
-            cmd.CommandText = @"
-                UPDATE Product
-                   SET Stock = @stock
-                 WHERE Id    = @productId";
-            cmd.Parameters.AddWithValue("@stock", newStock);
-            cmd.Parameters.AddWithValue("@productId", productId);
-            cmd.ExecuteNonQuery();
+            var (row1, row) = await SheetsRepo.FindRowByAsync("Product", "Id", productId.ToString());
+            if (row1 == 0 || row == null) throw new Exception("Product not found");
+
+            // Reescribimos toda la fila para mantener consistencia
+            await SheetsRepo.UpdateRowAsync(
+                "Product",
+                row1,
+                new object[] {
+                    ToInt(row["Id"]),
+                    row["Name"]?.ToString() ?? "",
+                    ToInt(row["Price"]),
+                    newStock,                                   // <-- Stock actualizado
+                    ToInt(row["Unit"]),
+                    row["Category"]?.ToString() ?? ""
+                }
+            );
         }
 
         // 4) Insertar entrada en historial de stocks
-        public void InsertHistory(int productId, int addedStocks)
+        public async Task InsertHistoryAsync(int productId, int addedStocks)
         {
-            using var con = ConnectionManager.GetConnection();
-            using var cmd = con.CreateCommand();
-            cmd.CommandText = @"
-                INSERT INTO History (ProductID, [Added Stocks], [Date])
-                VALUES (@productId, @addedStocks, CURRENT_TIMESTAMP)";
-            cmd.Parameters.AddWithValue("@productId", productId);
-            cmd.Parameters.AddWithValue("@addedStocks", addedStocks);
-            cmd.ExecuteNonQuery();
+            int id = await SheetsRepo.NextIdAsync("History", "Id");
+            // Fecha ISO para ordenar bien en Sheets
+            string nowIso = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+
+            await SheetsRepo.AppendRowAsync(
+                "History",
+                new object[] { id, productId, addedStocks, nowIso }
+            );
         }
 
-        // 5) (Opcional) Otro método para obtener stock, reutiliza GetCurrentStockById
-        public int GetProductStock(int productId)
-            => GetCurrentStockById(productId);
+        // 5) Alias
+        public Task<int> GetProductStockAsync(int productId) => GetCurrentStockByIdAsync(productId);
+
+        // --- helpers ---
+        private static int ToInt(object v) => int.TryParse(v?.ToString(), out var x) ? x : 0;
     }
 }

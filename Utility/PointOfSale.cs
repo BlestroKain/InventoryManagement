@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Globalization;
+using System.Threading.Tasks;
 using System.Windows.Forms;
-using InventoryApp.Data;
+using RapiMesa.Data;
 
-namespace InventoryApp.Utility
+namespace RapiMesa.Utility
 {
     public class PointOfSale
     {
@@ -14,95 +16,104 @@ namespace InventoryApp.Utility
             comboBox.Items.Add(new ComboBoxItem { Value = 15, Description = "15% off" });
             comboBox.Items.Add(new ComboBoxItem { Value = 30, Description = "30% off" });
             comboBox.Items.Add(new ComboBoxItem { Value = 50, Description = "50% off" });
+            comboBox.SelectedIndex = 0;
         }
 
-        // Calculate Discount in real time
-        public void CalculateDiscount(string totalText, object selectedItem, Label labelDiscount, Label labelTotalAfterDiscount)
+        // Calcula descuento -> actualiza labels
+        public void CalculateDiscount(string subtotalText, object selectedItem, Label labelDiscount, Label labelTotalAfterDiscount)
         {
-            int total = Convert.ToInt32(totalText);
-            double discountAmount = 0;
+            decimal subtotal = ParseDec(subtotalText);
+            decimal discountAmount = 0m;
 
-            if (selectedItem is ComboBoxItem selectedComboBoxItem)
+            if (selectedItem is ComboBoxItem opt)
             {
-                double discountPercent = selectedComboBoxItem.Value;
-                discountAmount = total * (discountPercent / 100);
+                decimal pct = (decimal)opt.Value / 100m;
+                discountAmount = Math.Round(subtotal * pct, 2, MidpointRounding.AwayFromZero);
             }
 
-            double totalAfterDiscount = total - discountAmount;
-            labelDiscount.Text = (0 - discountAmount).ToString();
-            labelTotalAfterDiscount.Text = totalAfterDiscount.ToString();
+            decimal totalAfter = subtotal - discountAmount;
+            labelDiscount.Text = discountAmount.ToString(CultureInfo.InvariantCulture);
+            labelTotalAfterDiscount.Text = totalAfter.ToString(CultureInfo.InvariantCulture);
         }
 
-        // Calculate Change in real time
+        // Calcula cambio -> actualiza label
         public void CalculateChange(Label totalLabel, TextBox paidTextBox, Label changeLabel)
         {
-            decimal totalAmount = decimal.Parse(totalLabel.Text);
+            decimal total = ParseDec(totalLabel.Text);
+            decimal paid = ParseDec(paidTextBox.Text);
 
-            if (decimal.TryParse(paidTextBox.Text, out decimal paidAmount))
-            {
-                decimal change = paidAmount - totalAmount;
-                if (change < 0)
-                {
-                    change = 0;
-                    changeLabel.Text = "0";
-                }
-                changeLabel.Text = change.ToString();
-            }
-            else
-            {
-                changeLabel.Text = string.Empty;
-            }
+            decimal change = paid - total;
+            if (change < 0) change = 0;
+            changeLabel.Text = change.ToString(CultureInfo.InvariantCulture);
         }
 
-        // Process Transaction then save to database
-        public bool ProcessTransaction(string totalText, string cashText, object selectedItem, string transactionId, ListBox listBox)
+        // Procesa la transacción (Google Sheets) - ASYNC
+        // Nota: listBox no es fuente de verdad; TransactionManager lee el Cart en Sheets.
+        public async Task<bool> ProcessTransactionAsync(
+            string subtotalText,
+            string cashText,
+            object selectedItem,
+            string transactionId,
+            ListBox _ /* ignorado */
+        )
         {
-            int subtotal = Convert.ToInt32(totalText);
-            int cash = string.IsNullOrWhiteSpace(cashText) ? 0 : Convert.ToInt32(cashText);
-            double discountPercent = 0;
-            if (selectedItem is ComboBoxItem selectedComboBoxItem)
-            {
-                discountPercent = selectedComboBoxItem.Value;
-            }
-
-            // Calculate the discount amount
-            double discountAmount = subtotal * (discountPercent / 100);
-
-            // Calculate the total after discount
-            double total = subtotal - discountAmount;
-
-            // Validate if there is enough cash
-            if (cash < total)
-            {
-                MessageBox.Show("Not enough cash to complete the transaction.");
-                return false;
-            }
-
-            double change = cash - total;
-            DateTime currentDate = DateTime.Now;
-
-            TransactionManager transactionManager = new TransactionManager();
             try
             {
-                transactionManager.SaveTransactionToDatabase(transactionId, subtotal, cash, discountPercent, discountAmount, change, currentDate, total, listBox);
+                decimal subtotal = ParseDec(subtotalText);
+                decimal cash = ParseDec(cashText);
+
+                double discountPercent = 0;
+                if (selectedItem is ComboBoxItem opt)
+                    discountPercent = opt.Value;
+
+                decimal discountAmount = Math.Round(subtotal * (decimal)(discountPercent / 100.0), 2, MidpointRounding.AwayFromZero);
+                decimal total = subtotal - discountAmount;
+
+                if (cash < total)
+                {
+                    MessageBox.Show("Not enough cash to complete the transaction.");
+                    return false;
+                }
+
+                decimal change = cash - total;
+
+                var tm = new TransactionManager();
+                await tm.SaveTransactionAsync(
+                    transactionId,
+                    subtotal,                     // decimal
+                    cash,                         // decimal
+                    discountPercent,              // double
+                    (double)discountAmount,       // double
+                    (double)change,               // double
+                    DateTime.Now,
+                    (double)total                 // double
+                );
+
                 return true;
             }
             catch (Exception ex)
             {
-                MessageBox.Show("An error occurred while saving the transaction: " + ex.Message);
+                MessageBox.Show("Error processing transaction:\r\n" + ex.Message,
+                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return false;
             }
         }
+
+        // ---- helpers ----
+        private static decimal ParseDec(string s)
+        {
+            if (string.IsNullOrWhiteSpace(s)) return 0m;
+            s = s.Replace("$", "").Trim();
+            if (decimal.TryParse(s, NumberStyles.Any, CultureInfo.InvariantCulture, out var d)) return d;
+            if (decimal.TryParse(s, NumberStyles.Any, CultureInfo.CurrentCulture, out d)) return d;
+            return 0m;
+        }
     }
 
-    public class ComboBoxItem
+    public sealed class ComboBoxItem
     {
         public double Value { get; set; }
         public string Description { get; set; }
-
-        public override string ToString()
-        {
-            return Description;
-        }
+        public override string ToString() => Description;
     }
 }
