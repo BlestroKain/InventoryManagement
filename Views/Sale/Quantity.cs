@@ -40,11 +40,11 @@ namespace RapiMesa
             {
                 int stock = await stockManager.GetProductStockAsync(productId);
                 if (v < stock) textBox2.Text = (v + 1).ToString();
-                else MessageBox.Show("Stock limit reached.");
+                else MessageBox.Show("Límite de stock alcanzado.");
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error checking stock:\r\n" + ex.Message,
+                MessageBox.Show("Error al verificar stock:\r\n" + ex.Message,
                     "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -54,7 +54,7 @@ namespace RapiMesa
         {
             if (!int.TryParse(textBox2.Text, out int qty) || qty <= 0)
             {
-                MessageBox.Show("Invalid quantity.");
+                MessageBox.Show("Cantidad inválida.");
                 return;
             }
 
@@ -67,7 +67,7 @@ namespace RapiMesa
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error updating cart:\r\n" + ex.Message,
+                MessageBox.Show("Error al actualizar el carrito:\r\n" + ex.Message,
                     "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             finally

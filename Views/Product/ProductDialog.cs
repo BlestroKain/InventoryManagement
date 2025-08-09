@@ -18,7 +18,7 @@ namespace RapiMesa
             productManager = manager ?? throw new ArgumentNullException(nameof(manager));
             itemId = 0;
 
-            Text = "Add New Product";
+            Text = "Agregar Producto";
 
             // Cargar categorías cuando el form ya está mostrado (permite await)
             this.Shown -= ProductDialog_Shown;
@@ -47,7 +47,7 @@ namespace RapiMesa
             UnitTxt.Text = unit.ToString();
             CategoryCmb.Text = category ?? "";
 
-            Text = "Edit Product";
+            Text = "Editar Producto";
 
             // Cargar categorías al mostrar y luego seleccionar la existente
             this.Shown -= ProductDialog_Shown;
@@ -63,7 +63,7 @@ namespace RapiMesa
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error loading categories:\r\n" + ex.Message,
+                MessageBox.Show("Error al cargar categorías:\r\n" + ex.Message,
                     "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -93,27 +93,27 @@ namespace RapiMesa
 
             if (string.IsNullOrWhiteSpace(NameTxt.Text))
             {
-                errorProvider1.SetError(NameTxt, "Product name is required.");
+                errorProvider1.SetError(NameTxt, "El nombre del producto es obligatorio.");
                 ok = false;
             }
             if (!int.TryParse(PriceTxt.Text, out _))
             {
-                errorProvider1.SetError(PriceTxt, "Price must be a number.");
+                errorProvider1.SetError(PriceTxt, "El precio debe ser un número.");
                 ok = false;
             }
             if (!int.TryParse(StockTxt.Text, out _))
             {
-                errorProvider1.SetError(StockTxt, "Stock must be a number.");
+                errorProvider1.SetError(StockTxt, "El stock debe ser un número.");
                 ok = false;
             }
             if (!int.TryParse(UnitTxt.Text, out _))
             {
-                errorProvider1.SetError(UnitTxt, "Unit must be a number.");
+                errorProvider1.SetError(UnitTxt, "La unidad debe ser un número.");
                 ok = false;
             }
             if (string.IsNullOrWhiteSpace(CategoryCmb.Text))
             {
-                errorProvider1.SetError(CategoryCmb, "Category is required.");
+                errorProvider1.SetError(CategoryCmb, "La categoría es obligatoria.");
                 ok = false;
             }
 
@@ -153,7 +153,7 @@ namespace RapiMesa
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error saving product:\r\n" + ex.Message,
+                MessageBox.Show("Error al guardar el producto:\r\n" + ex.Message,
                     "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }

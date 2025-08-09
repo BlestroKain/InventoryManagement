@@ -38,7 +38,7 @@ namespace RapiMesa.Data
             }
 
             if (myCartRows.Count == 0)
-                throw new InvalidOperationException("Cart is empty for current user.");
+                throw new InvalidOperationException("El carrito está vacío para el usuario actual.");
 
             // 2) Armar items (resolver ProductId si falta)
             var items = new List<CartItem>();

@@ -74,7 +74,7 @@
             this.CashLbl.Name = "CashLbl";
             this.CashLbl.Size = new System.Drawing.Size(53, 19);
             this.CashLbl.TabIndex = 3;
-            this.CashLbl.Text = "Cash:";
+            this.CashLbl.Text = "Efectivo:";
             // 
             // CancelBtn
             // 
@@ -236,7 +236,7 @@
             this.Name = "Checkout";
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-            this.Text = "Checkout";
+            this.Text = "Cobro";
             this.CheckoutGrp.ResumeLayout(false);
             this.CheckoutGrp.PerformLayout();
             this.ResumeLayout(false);

@@ -61,11 +61,11 @@ namespace RapiMesa.Views.Transaction
 
                 // Opcional: renombrar encabezado "ChangeAmt" -> "Change"
                 if (dataGridView1.Columns["ChangeAmt"] != null)
-                    dataGridView1.Columns["ChangeAmt"].HeaderText = "Change";
+                    dataGridView1.Columns["ChangeAmt"].HeaderText = "Cambio";
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error loading transactions:\r\n" + ex.Message,
+                MessageBox.Show("Error al cargar las transacciones:\r\n" + ex.Message,
                     "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }

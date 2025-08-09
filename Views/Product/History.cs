@@ -55,7 +55,7 @@ namespace RapiMesa.InventoryApp.dlg
             catch (Exception ex)
             {
                 MessageBox.Show(
-                    "Error loading history:\r\n" + ex.Message,
+                    "Error al cargar el historial:\r\n" + ex.Message,
                     "Error",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error

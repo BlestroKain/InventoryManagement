@@ -124,7 +124,7 @@ namespace RapiMesa.Views.Dashboard
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error updating dashboard:\r\n" + ex.Message,
+                MessageBox.Show("Error al actualizar el panel:\r\n" + ex.Message,
                     "Dashboard", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             finally

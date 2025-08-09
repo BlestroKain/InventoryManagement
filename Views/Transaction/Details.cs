@@ -61,7 +61,7 @@ namespace RapiMesa.Views.Transaction
             catch (Exception ex)
             {
                 MessageBox.Show(
-                    "Error loading order details:\r\n" + ex.Message,
+                    "Error al cargar los detalles del pedido:\r\n" + ex.Message,
                     "Error",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error

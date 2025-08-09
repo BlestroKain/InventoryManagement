@@ -11,7 +11,7 @@ namespace RapiMesa.Data
         private const int KeySize = 32; // 256 bits
         private const int Iter = 10000;
 
-        // ======= API PÚBLICA (async) =======
+        // ======= API PÃšBLICA (async) =======
 
         // Valida credenciales; devuelve Uid (>0 si OK, 0 si falla)
         public async Task<int> ValidateUserCredentialsAsync(string username, string password)
@@ -50,8 +50,8 @@ namespace RapiMesa.Data
             if (await IsUsernameExistsAsync(username))
             {
                 MessageBox.Show(
-                    "Username already exists. Please choose a different username.",
-                    "Registration Error",
+                    "El nombre de usuario ya existe. Por favor elige otro.",
+                    "Error de registro",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
@@ -61,8 +61,8 @@ namespace RapiMesa.Data
                 new object[] { uid, username, HashPassword(password) });
 
             MessageBox.Show(
-                "Registration successful!",
-                "Registration",
+                "Registro exitoso",
+                "Registro",
                 MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 

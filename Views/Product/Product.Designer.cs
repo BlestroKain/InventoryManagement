@@ -49,7 +49,7 @@
             this.AddBtn.Name = "AddBtn";
             this.AddBtn.Size = new System.Drawing.Size(150, 44);
             this.AddBtn.TabIndex = 0;
-            this.AddBtn.Text = "ADD";
+            this.AddBtn.Text = "AGREGAR";
             this.AddBtn.UseVisualStyleBackColor = true;
             this.AddBtn.Click += new System.EventHandler(this.Add_Click);
             // 
@@ -61,7 +61,7 @@
             this.EditBtn.Name = "EditBtn";
             this.EditBtn.Size = new System.Drawing.Size(150, 44);
             this.EditBtn.TabIndex = 1;
-            this.EditBtn.Text = "EDIT";
+            this.EditBtn.Text = "EDITAR";
             this.EditBtn.UseVisualStyleBackColor = true;
             this.EditBtn.Click += new System.EventHandler(this.button2_Click);
             // 
@@ -73,7 +73,7 @@
             this.DeleteBtn.Name = "DeleteBtn";
             this.DeleteBtn.Size = new System.Drawing.Size(150, 44);
             this.DeleteBtn.TabIndex = 2;
-            this.DeleteBtn.Text = "DELETE";
+            this.DeleteBtn.Text = "ELIMINAR";
             this.DeleteBtn.UseVisualStyleBackColor = true;
             this.DeleteBtn.Click += new System.EventHandler(this.DeleteBtn_Click);
             // 
@@ -90,7 +90,7 @@
             this.groupBox1.Size = new System.Drawing.Size(1090, 628);
             this.groupBox1.TabIndex = 3;
             this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "ProductList";
+            this.groupBox1.Text = "Lista de Productos";
             // 
             // dataGridView1
             // 
@@ -121,7 +121,7 @@
             this.AddStockBtn.Name = "AddStockBtn";
             this.AddStockBtn.Size = new System.Drawing.Size(150, 44);
             this.AddStockBtn.TabIndex = 4;
-            this.AddStockBtn.Text = "ADD STOCK";
+            this.AddStockBtn.Text = "AGREGAR STOCK";
             this.AddStockBtn.UseVisualStyleBackColor = true;
             this.AddStockBtn.Click += new System.EventHandler(this.AddStockBtn_Click);
             // 
@@ -133,7 +133,7 @@
             this.HistoryBtn.Name = "HistoryBtn";
             this.HistoryBtn.Size = new System.Drawing.Size(150, 44);
             this.HistoryBtn.TabIndex = 5;
-            this.HistoryBtn.Text = "HISTORY";
+            this.HistoryBtn.Text = "HISTORIAL";
             this.HistoryBtn.UseVisualStyleBackColor = true;
             this.HistoryBtn.Click += new System.EventHandler(this.button5_Click);
             // 
@@ -157,7 +157,7 @@
             this.SearchBtn.Name = "SearchBtn";
             this.SearchBtn.Size = new System.Drawing.Size(125, 34);
             this.SearchBtn.TabIndex = 0;
-            this.SearchBtn.Text = "SEARCH";
+            this.SearchBtn.Text = "BUSCAR";
             this.SearchBtn.UseVisualStyleBackColor = true;
             this.SearchBtn.Click += new System.EventHandler(this.button6_Click);
             // 
@@ -178,7 +178,7 @@
             this.Margin = new System.Windows.Forms.Padding(5, 4, 5, 4);
             this.Name = "Product";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-            this.Text = "Product";
+            this.Text = "Producto";
             this.groupBox1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
             this.ResumeLayout(false);
