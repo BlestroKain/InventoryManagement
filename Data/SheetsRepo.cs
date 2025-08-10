@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace RapiMesa.Data
@@ -147,6 +148,39 @@ namespace RapiMesa.Data
             foreach (DataRow r in dt.Rows)
                 if (int.TryParse(r[idColumn]?.ToString(), out var v) && v > max) max = v;
             return max + 1;
+        }
+
+        public static async Task BackupAllAsync(string folder)
+        {
+            var ss = await Svc.Spreadsheets.Get(Sid).ExecuteAsync();
+            foreach (var sh in ss.Sheets)
+            {
+                var name = sh.Properties.Title;
+                var dt = await ReadTableAsync(name);
+                var path = Path.Combine(folder, $"{DateTime.Now:yyyyMMdd_HHmmss}_{name}.csv");
+                WriteCsv(dt, path);
+            }
+        }
+
+        private static void WriteCsv(DataTable dt, string path)
+        {
+            using var sw = new StreamWriter(path);
+            var headers = dt.Columns.Cast<DataColumn>().Select(c => EscapeCsv(c.ColumnName));
+            sw.WriteLine(string.Join(",", headers));
+            foreach (DataRow row in dt.Rows)
+            {
+                var fields = dt.Columns.Cast<DataColumn>()
+                    .Select(c => EscapeCsv(row[c]?.ToString() ?? string.Empty));
+                sw.WriteLine(string.Join(",", fields));
+            }
+        }
+
+        private static string EscapeCsv(string input)
+        {
+            if (string.IsNullOrEmpty(input)) return string.Empty;
+            if (input.Contains(",") || input.Contains("\""))
+                return $"\"{input.Replace("\"", "\"\"")}\"";
+            return input;
         }
     }
 }
