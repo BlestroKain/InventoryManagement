@@ -238,6 +238,8 @@
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.Font = new System.Drawing.Font("News706 BT", 12F, System.Drawing.FontStyle.Bold);
 
+            this.Icon = System.Drawing.SystemIcons.Application;
+
             this.Name = "Checkout";
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;

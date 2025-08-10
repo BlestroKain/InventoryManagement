@@ -77,6 +77,8 @@
             this.MinimizeBox = false;
             this.Font = new System.Drawing.Font("News706 BT", 12F, System.Drawing.FontStyle.Bold);
 
+            this.Icon = System.Drawing.SystemIcons.Application;
+
             this.Name = "Transaction";
             this.ShowIcon = false;
             this.Text = "Transaction";
