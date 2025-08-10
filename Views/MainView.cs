@@ -23,6 +23,10 @@ namespace RapiMesa
             InitializeComponent();
             ThemeManager.ApplyTheme(this);
 
+            darkModeChk.CheckedChanged -= darkModeChk_CheckedChanged;
+            darkModeChk.Checked = ThemeManager.IsDarkMode;
+            darkModeChk.CheckedChanged += darkModeChk_CheckedChanged;
+
             cartManager = new CartManager();
 
             // Cargar Dashboard de entrada

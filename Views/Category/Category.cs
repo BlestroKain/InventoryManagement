@@ -17,6 +17,13 @@ namespace RapiMesa.InventoryApp.Views
             ThemeManager.ApplyTheme(this);
             categoryManager = new CategoryManager();
 
+            button1.Image = PlaceholderIcons.Add;
+            button2.Image = PlaceholderIcons.Edit;
+            button3.Image = PlaceholderIcons.Delete;
+            button1.TextImageRelation = TextImageRelation.ImageBeforeText;
+            button2.TextImageRelation = TextImageRelation.ImageBeforeText;
+            button3.TextImageRelation = TextImageRelation.ImageBeforeText;
+
             // Cargar asíncrono cuando el form se muestra
             this.Shown -= Category_Shown;
             this.Shown += Category_Shown;

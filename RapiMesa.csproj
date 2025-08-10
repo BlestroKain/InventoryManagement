@@ -139,6 +139,8 @@
     <Compile Include="Utility\TransactionIdGenerator.cs" />
     <Compile Include="Utility\UserSession.cs" />
     <Compile Include="Utility\ThemeManager.cs" />
+    <Compile Include="Utility\DataGridViewFader.cs" />
+    <Compile Include="Utility\PlaceholderIcons.cs" />
     <Compile Include="Views\Dashboard\Dashboard.cs">
       <SubType>Form</SubType>
     </Compile>
