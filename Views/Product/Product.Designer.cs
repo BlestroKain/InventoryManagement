@@ -28,6 +28,8 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
+            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.AddBtn = new System.Windows.Forms.Button();
             this.EditBtn = new System.Windows.Forms.Button();
             this.DeleteBtn = new System.Windows.Forms.Button();
@@ -58,7 +60,9 @@
             this.AddBtn.Name = "AddBtn";
             this.AddBtn.Size = new System.Drawing.Size(150, 44);
             this.AddBtn.TabIndex = 0;
-            this.AddBtn.Text = "AGREGAR";
+            this.AddBtn.Text = "";
+            this.AddBtn.Image = System.Drawing.SystemIcons.Application.ToBitmap();
+            this.toolTip1.SetToolTip(this.AddBtn, "Agregar");
             this.AddBtn.UseVisualStyleBackColor = true;
             this.AddBtn.Click += new System.EventHandler(this.Add_Click);
             // 
@@ -70,7 +74,9 @@
             this.EditBtn.Name = "EditBtn";
             this.EditBtn.Size = new System.Drawing.Size(150, 44);
             this.EditBtn.TabIndex = 1;
-            this.EditBtn.Text = "EDITAR";
+            this.EditBtn.Text = "";
+            this.EditBtn.Image = System.Drawing.SystemIcons.Warning.ToBitmap();
+            this.toolTip1.SetToolTip(this.EditBtn, "Editar");
             this.EditBtn.UseVisualStyleBackColor = true;
             this.EditBtn.Click += new System.EventHandler(this.button2_Click);
             // 
@@ -82,7 +88,9 @@
             this.DeleteBtn.Name = "DeleteBtn";
             this.DeleteBtn.Size = new System.Drawing.Size(150, 44);
             this.DeleteBtn.TabIndex = 2;
-            this.DeleteBtn.Text = "ELIMINAR";
+            this.DeleteBtn.Text = "";
+            this.DeleteBtn.Image = System.Drawing.SystemIcons.Error.ToBitmap();
+            this.toolTip1.SetToolTip(this.DeleteBtn, "Eliminar");
             this.DeleteBtn.UseVisualStyleBackColor = true;
             this.DeleteBtn.Click += new System.EventHandler(this.DeleteBtn_Click);
 
@@ -94,7 +102,9 @@
             this.ExportBtn.Name = "ExportBtn";
             this.ExportBtn.Size = new System.Drawing.Size(169, 44);
             this.ExportBtn.TabIndex = 13;
-            this.ExportBtn.Text = "EXPORTAR";
+            this.ExportBtn.Text = "";
+            this.ExportBtn.Image = System.Drawing.SystemIcons.WinLogo.ToBitmap();
+            this.toolTip1.SetToolTip(this.ExportBtn, "Exportar");
             this.ExportBtn.UseVisualStyleBackColor = true;
             this.ExportBtn.Click += new System.EventHandler(this.ExportBtn_Click);
 
@@ -143,7 +153,9 @@
             this.AddStockBtn.Name = "AddStockBtn";
             this.AddStockBtn.Size = new System.Drawing.Size(169, 44);
             this.AddStockBtn.TabIndex = 4;
-            this.AddStockBtn.Text = "AGREGAR STOCK";
+            this.AddStockBtn.Text = "";
+            this.AddStockBtn.Image = System.Drawing.SystemIcons.Asterisk.ToBitmap();
+            this.toolTip1.SetToolTip(this.AddStockBtn, "Agregar stock");
             this.AddStockBtn.UseVisualStyleBackColor = true;
             this.AddStockBtn.Click += new System.EventHandler(this.AddStockBtn_Click);
             // 
@@ -155,7 +167,9 @@
             this.HistoryBtn.Name = "HistoryBtn";
             this.HistoryBtn.Size = new System.Drawing.Size(169, 44);
             this.HistoryBtn.TabIndex = 5;
-            this.HistoryBtn.Text = "HISTORIAL";
+            this.HistoryBtn.Text = "";
+            this.HistoryBtn.Image = System.Drawing.SystemIcons.Information.ToBitmap();
+            this.toolTip1.SetToolTip(this.HistoryBtn, "Historial");
             this.HistoryBtn.UseVisualStyleBackColor = true;
             this.HistoryBtn.Click += new System.EventHandler(this.button5_Click);
             // 
@@ -179,7 +193,9 @@
             this.SearchBtn.Name = "SearchBtn";
             this.SearchBtn.Size = new System.Drawing.Size(125, 34);
             this.SearchBtn.TabIndex = 0;
-            this.SearchBtn.Text = "BUSCAR";
+            this.SearchBtn.Text = "";
+            this.SearchBtn.Image = System.Drawing.SystemIcons.Question.ToBitmap();
+            this.toolTip1.SetToolTip(this.SearchBtn, "Buscar");
             this.SearchBtn.UseVisualStyleBackColor = true;
             this.SearchBtn.Click += new System.EventHandler(this.button6_Click);
             //
@@ -298,6 +314,7 @@
         private System.Windows.Forms.Label labelMaxPrice;
         private System.Windows.Forms.NumericUpDown numericMaxPrice;
         private System.Windows.Forms.Button ExportBtn;
+        private System.Windows.Forms.ToolTip toolTip1;
     }
 }
 

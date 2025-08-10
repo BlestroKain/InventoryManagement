@@ -28,6 +28,8 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
+            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.label1 = new System.Windows.Forms.Label();
             this.textBox2 = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
@@ -71,7 +73,9 @@
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(111, 41);
             this.button1.TabIndex = 10;
-            this.button1.Text = "AGREGAR";
+            this.button1.Text = "";
+            this.button1.Image = System.Drawing.SystemIcons.Application.ToBitmap();
+            this.toolTip1.SetToolTip(this.button1, "Agregar");
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
@@ -81,7 +85,9 @@
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(116, 41);
             this.button2.TabIndex = 11;
-            this.button2.Text = "CANCELAR";
+            this.button2.Text = "";
+            this.button2.Image = System.Drawing.SystemIcons.Hand.ToBitmap();
+            this.toolTip1.SetToolTip(this.button2, "Cancelar");
             this.button2.UseVisualStyleBackColor = true;
             this.button2.Click += new System.EventHandler(this.button2_Click);
             // 
@@ -149,5 +155,6 @@
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.GroupBox groupBox2;
         private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.ToolTip toolTip1;
     }
 }
