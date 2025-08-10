@@ -150,6 +150,8 @@
             this.MinimizeBox = false;
             this.Font = new System.Drawing.Font("News706 BT", 12F, System.Drawing.FontStyle.Bold);
 
+            this.Icon = System.Drawing.SystemIcons.Application;
+
             this.Name = "UserAuth";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "UserAuth";

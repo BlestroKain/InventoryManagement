@@ -28,6 +28,8 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
+            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.dataGridView1 = new System.Windows.Forms.DataGridView();
             this.DeleteBtn = new System.Windows.Forms.Button();
@@ -76,7 +78,9 @@
             this.DeleteBtn.Name = "DeleteBtn";
             this.DeleteBtn.Size = new System.Drawing.Size(113, 30);
             this.DeleteBtn.TabIndex = 7;
-            this.DeleteBtn.Text = "ELIMINAR";
+            this.DeleteBtn.Text = "";
+            this.DeleteBtn.Image = System.Drawing.SystemIcons.Error.ToBitmap();
+            this.toolTip1.SetToolTip(this.DeleteBtn, "Eliminar");
             this.DeleteBtn.UseVisualStyleBackColor = true;
             this.DeleteBtn.Click += new System.EventHandler(this.button3_Click);
             // 
@@ -87,7 +91,9 @@
             this.EditBtn.Name = "EditBtn";
             this.EditBtn.Size = new System.Drawing.Size(113, 30);
             this.EditBtn.TabIndex = 6;
-            this.EditBtn.Text = "EDITAR";
+            this.EditBtn.Text = "";
+            this.EditBtn.Image = System.Drawing.SystemIcons.Warning.ToBitmap();
+            this.toolTip1.SetToolTip(this.EditBtn, "Editar");
             this.EditBtn.UseVisualStyleBackColor = true;
             this.EditBtn.Click += new System.EventHandler(this.button2_Click);
             // 
@@ -98,7 +104,9 @@
             this.AddBtn.Name = "AddBtn";
             this.AddBtn.Size = new System.Drawing.Size(113, 30);
             this.AddBtn.TabIndex = 5;
-            this.AddBtn.Text = "AGREGAR";
+            this.AddBtn.Text = "";
+            this.AddBtn.Image = System.Drawing.SystemIcons.Application.ToBitmap();
+            this.toolTip1.SetToolTip(this.AddBtn, "Agregar");
             this.AddBtn.UseVisualStyleBackColor = true;
             this.AddBtn.Click += new System.EventHandler(this.button1_Click);
             // 
@@ -112,6 +120,7 @@
             this.Controls.Add(this.EditBtn);
             this.Controls.Add(this.AddBtn);
             this.Font = new System.Drawing.Font("News706 BT", 12F, System.Drawing.FontStyle.Bold);
+            this.Icon = System.Drawing.SystemIcons.Application;
             this.Name = "Category";
             this.Text = "Category";
             this.groupBox1.ResumeLayout(false);
@@ -127,5 +136,6 @@
         private System.Windows.Forms.Button DeleteBtn;
         private System.Windows.Forms.Button EditBtn;
         private System.Windows.Forms.Button AddBtn;
+        private System.Windows.Forms.ToolTip toolTip1;
     }
 }
