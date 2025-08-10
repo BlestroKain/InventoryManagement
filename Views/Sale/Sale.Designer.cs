@@ -28,6 +28,8 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
+            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.dataGridView1 = new System.Windows.Forms.DataGridView();
             this.button2 = new System.Windows.Forms.Button();
@@ -76,7 +78,9 @@
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(115, 30);
             this.button2.TabIndex = 6;
-            this.button2.Text = "ELIMINAR";
+            this.button2.Text = "";
+            this.button2.Image = System.Drawing.SystemIcons.Error.ToBitmap();
+            this.toolTip1.SetToolTip(this.button2, "Eliminar");
             this.button2.UseVisualStyleBackColor = true;
             this.button2.Click += new System.EventHandler(this.button2_Click);
             // 
@@ -87,7 +91,9 @@
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(115, 30);
             this.button1.TabIndex = 5;
-            this.button1.Text = "COBRAR";
+            this.button1.Text = "";
+            this.button1.Image = System.Drawing.SystemIcons.Shield.ToBitmap();
+            this.toolTip1.SetToolTip(this.button1, "Cobrar");
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
@@ -98,7 +104,9 @@
             this.button4.Name = "button4";
             this.button4.Size = new System.Drawing.Size(115, 30);
             this.button4.TabIndex = 8;
-            this.button4.Text = "CANTIDAD";
+            this.button4.Text = "";
+            this.button4.Image = System.Drawing.SystemIcons.Question.ToBitmap();
+            this.toolTip1.SetToolTip(this.button4, "Cantidad");
             this.button4.UseVisualStyleBackColor = true;
             this.button4.Click += new System.EventHandler(this.button4_Click);
             // 
@@ -112,6 +120,7 @@
             this.Controls.Add(this.button2);
             this.Controls.Add(this.button1);
             this.Font = new System.Drawing.Font("News706 BT", 12F, System.Drawing.FontStyle.Bold);
+            this.Icon = System.Drawing.SystemIcons.Application;
             this.Name = "Sale";
             this.Text = "Carrito";
             this.groupBox1.ResumeLayout(false);
@@ -127,5 +136,6 @@
         private System.Windows.Forms.Button button2;
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.Button button4;
+        private System.Windows.Forms.ToolTip toolTip1;
     }
 }
