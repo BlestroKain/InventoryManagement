@@ -73,8 +73,14 @@ namespace RapiMesa.Data
         {
             name = (name ?? "").Trim();
             category = (category ?? "").Trim();
+            ValidateProductParams(name, price, stock, unit, category);
 
             var dt = await SheetsRepo.ReadTableCachedAsync("Product");
+
+            bool exists = dt.AsEnumerable()
+                            .Any(r => string.Equals(r["Name"]?.ToString()?.Trim(),
+                                                    name, StringComparison.OrdinalIgnoreCase));
+            if (exists) throw new Exception("Product already exists");
 
             // Generar Id localmente
             int newId = dt.AsEnumerable()
@@ -92,6 +98,13 @@ namespace RapiMesa.Data
             if (id <= 0) throw new ArgumentException("Invalid product id");
             name = (name ?? "").Trim();
             category = (category ?? "").Trim();
+            ValidateProductParams(name, price, stock, unit, category);
+
+            var dt = await SheetsRepo.ReadTableCachedAsync("Product");
+            bool exists = dt.AsEnumerable()
+                            .Any(r => string.Equals(r["Name"]?.ToString()?.Trim(), name, StringComparison.OrdinalIgnoreCase)
+                                       && SafeInt(r["Id"]) != id);
+            if (exists) throw new Exception("Product already exists");
 
             var (row1, _) = await SheetsRepo.FindRowByAsync("Product", "Id", id.ToString());
             if (row1 == 0) throw new Exception("Product not found");
@@ -137,7 +150,7 @@ namespace RapiMesa.Data
         public static async Task<bool> AddItemToCartAsync(string name, int price)
         {
             name = (name ?? "").Trim();
-            if (string.IsNullOrWhiteSpace(name)) return false;
+            if (string.IsNullOrWhiteSpace(name) || price <= 0) return false;
 
             int uid = UserSession.SessionUID;
 
@@ -195,5 +208,14 @@ namespace RapiMesa.Data
 
         // ---- helpers ----
         private static int SafeInt(object v) => int.TryParse(v?.ToString(), out var n) ? n : 0;
+
+        private static void ValidateProductParams(string name, int price, int stock, int unit, string category)
+        {
+            if (string.IsNullOrWhiteSpace(name)) throw new ArgumentException("Name is required", nameof(name));
+            if (price <= 0) throw new ArgumentException("Price must be positive", nameof(price));
+            if (stock < 0) throw new ArgumentException("Stock cannot be negative", nameof(stock));
+            if (unit <= 0) throw new ArgumentException("Unit must be positive", nameof(unit));
+            if (string.IsNullOrWhiteSpace(category)) throw new ArgumentException("Category is required", nameof(category));
+        }
     }
 }

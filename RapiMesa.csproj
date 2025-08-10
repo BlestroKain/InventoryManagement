@@ -150,6 +150,9 @@
     <Compile Include="Utility\ThemeManager.cs" />
     <Compile Include="Utility\DataGridViewFader.cs" />
     <Compile Include="Utility\PlaceholderIcons.cs" />
+    <Compile Include="Utility\ErrorLogger.cs" />
+    <Compile Include="Utility\BackupService.cs" />
+    <Compile Include="Utility\StressTester.cs" />
     <Compile Include="Views\Dashboard\Dashboard.cs">
       <SubType>Form</SubType>
     </Compile>

@@ -14,6 +14,9 @@ namespace RapiMesa
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
+            Application.ThreadException += (s, e) => HandleException(e.Exception);
+            AppDomain.CurrentDomain.UnhandledException += (s, e) => HandleException(e.Exception as Exception);
+
             try
             {
                 // Inicializar conexión a Google Sheets
@@ -24,17 +27,25 @@ namespace RapiMesa
             }
             catch (Exception ex)
             {
-                MessageBox.Show(
-                    $"Error al conectar con Google Sheets:\n{ex.Message}",
-                    "Error de conexión",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error
-                );
+                HandleException(ex);
                 return;
             }
             SyncQueue.Start();
+            BackupService.Start();
 
             Application.Run(new UserAuth());
+        }
+
+        private static void HandleException(Exception ex)
+        {
+            if (ex == null) return;
+            ErrorLogger.Log(ex);
+            MessageBox.Show(
+                $"Ocurrió un error inesperado:\n{ex.Message}",
+                "Error",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error
+            );
         }
     }
 }
