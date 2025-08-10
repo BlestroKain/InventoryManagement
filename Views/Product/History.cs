@@ -2,6 +2,7 @@
 using System.Data;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using RapiMesa.Utility;
 using RapiMesa.Data;
 
 namespace RapiMesa.InventoryApp.dlg
@@ -13,6 +14,7 @@ namespace RapiMesa.InventoryApp.dlg
         public History(int id)
         {
             InitializeComponent();
+            ThemeManager.ApplyTheme(this);
             productId = id;
 
             // Cargar cuando el form ya está visible (para poder usar await)

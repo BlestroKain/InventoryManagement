@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using RapiMesa.Utility;
 using System.Collections.Generic;
 using System.Windows.Forms.DataVisualization.Charting;
 using RapiMesa.Data; // <-- usa tu namespace real del SheetsRepo
@@ -25,6 +26,7 @@ namespace RapiMesa.Views.Dashboard
         public Dashboard()
         {
             InitializeComponent();
+            ThemeManager.ApplyTheme(this);
 
             // Rango
             btn7d.Click += (s, e) => { _range = TimeRange.Last7; RefreshSalesChart(); };

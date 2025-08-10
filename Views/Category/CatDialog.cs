@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using RapiMesa.Utility;
 using RapiMesa.Data;
 
 namespace RapiMesa
@@ -15,6 +16,7 @@ namespace RapiMesa
         public CatDialog(CategoryManager manager)
         {
             InitializeComponent();
+            ThemeManager.ApplyTheme(this);
             categoryManager = manager ?? throw new ArgumentNullException(nameof(manager));
             itemId = 0;
             Text = "Agregar Categoría";

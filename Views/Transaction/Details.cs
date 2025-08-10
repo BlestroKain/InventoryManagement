@@ -2,6 +2,7 @@
 using System.Data;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using RapiMesa.Utility;
 using RapiMesa.Data;
 
 namespace RapiMesa.Views.Transaction
@@ -13,6 +14,7 @@ namespace RapiMesa.Views.Transaction
         public Details(string id)
         {
             InitializeComponent();
+            ThemeManager.ApplyTheme(this);
             _transactionId = id ?? "";
 
             // Cargar cuando el form ya está visible (para poder usar await sin congelar la UI)

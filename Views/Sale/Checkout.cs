@@ -3,8 +3,8 @@ using System.Data;
 using System.Globalization;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using RapiMesa.Utility;
 using RapiMesa.Data;      // CartManager (lee del cache)
-using RapiMesa.Utility;   // PointOfSale con ProcessTransactionAsync()
 
 namespace RapiMesa
 {
@@ -17,6 +17,7 @@ namespace RapiMesa
         public Checkout(decimal totalPrice)
         {
             InitializeComponent();
+            ThemeManager.ApplyTheme(this);
 
             pointOfSale = new PointOfSale();
             cartManager = new CartManager();
