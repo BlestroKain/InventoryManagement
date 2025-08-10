@@ -110,6 +110,9 @@
     <Reference Include="System.Numerics.Vectors, Version=4.1.6.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>packages\System.Numerics.Vectors.4.6.1\lib\net462\System.Numerics.Vectors.dll</HintPath>
     </Reference>
+    <Reference Include="itextsharp, Version=5.5.13.3, Culture=neutral, PublicKeyToken=8354ae6d2174ddca, processorArchitecture=MSIL">
+      <HintPath>packages\iTextSharp.5.5.13.3\lib\net45\itextsharp.dll</HintPath>
+    </Reference>
     <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=6.0.3.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>packages\System.Runtime.CompilerServices.Unsafe.6.1.2\lib\net462\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
     </Reference>
@@ -138,6 +141,9 @@
     <Compile Include="Utility\PointOfSale.cs" />
     <Compile Include="Utility\TransactionIdGenerator.cs" />
     <Compile Include="Utility\UserSession.cs" />
+    <Compile Include="Utility\UserRole.cs" />
+    <Compile Include="Utility\ChangeLogger.cs" />
+    <Compile Include="Utility\ExportHelper.cs" />
     <Compile Include="Utility\ThemeManager.cs" />
     <Compile Include="Utility\DataGridViewFader.cs" />
     <Compile Include="Utility\PlaceholderIcons.cs" />

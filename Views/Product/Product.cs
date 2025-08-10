@@ -243,6 +243,28 @@ namespace RapiMesa
             }
         }
 
+        // EXPORT BUTTON
+        private void ExportBtn_Click(object sender, EventArgs e)
+        {
+            using (var sfd = new SaveFileDialog())
+            {
+                sfd.Filter = "CSV (*.csv)|*.csv|PDF (*.pdf)|*.pdf";
+                sfd.FileName = "productos";
+                if (sfd.ShowDialog() == DialogResult.OK)
+                {
+                    try
+                    {
+                        ExportHelper.ExportToFile(dataGridView1, sfd.FileName);
+                        MessageBox.Show("Exportación completada.", "Exportar", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("Error al exportar: " + ex.Message, "Exportar", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+            }
+        }
+
         // Añade la columna de botón "Add" si no existe, y engancha a un ÚNICO handler async
         private void SetupAddToCartButton()
         {

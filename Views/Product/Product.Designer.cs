@@ -35,6 +35,7 @@
             this.dataGridView1 = new System.Windows.Forms.DataGridView();
             this.AddStockBtn = new System.Windows.Forms.Button();
             this.HistoryBtn = new System.Windows.Forms.Button();
+            this.ExportBtn = new System.Windows.Forms.Button();
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.SearchBtn = new System.Windows.Forms.Button();
             this.labelCategory = new System.Windows.Forms.Label();
@@ -244,6 +245,7 @@
             this.Controls.Add(this.labelCategory);
             this.Controls.Add(this.SearchBtn);
             this.Controls.Add(this.textBox1);
+            this.Controls.Add(this.ExportBtn);
             this.Controls.Add(this.HistoryBtn);
             this.Controls.Add(this.AddStockBtn);
             this.Controls.Add(this.groupBox1);
@@ -281,6 +283,19 @@
         private System.Windows.Forms.NumericUpDown numericMinPrice;
         private System.Windows.Forms.Label labelMaxPrice;
         private System.Windows.Forms.NumericUpDown numericMaxPrice;
+        private System.Windows.Forms.Button ExportBtn;
     }
 }
+
+            // ExportBtn
+            //
+            this.ExportBtn.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.ExportBtn.Location = new System.Drawing.Point(1115, 545);
+            this.ExportBtn.Margin = new System.Windows.Forms.Padding(5, 4, 5, 4);
+            this.ExportBtn.Name = "ExportBtn";
+            this.ExportBtn.Size = new System.Drawing.Size(169, 44);
+            this.ExportBtn.TabIndex = 13;
+            this.ExportBtn.Text = "EXPORTAR";
+            this.ExportBtn.UseVisualStyleBackColor = true;
+            this.ExportBtn.Click += new System.EventHandler(this.ExportBtn_Click);
 

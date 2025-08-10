@@ -84,6 +84,7 @@ namespace RapiMesa.Data
 
             SyncQueue.Enqueue(new AppendOp("Product", new object[] { newId, name, price, stock, unit, category }));
             SheetsRepo.Invalidate("Product");
+            ChangeLogger.Log(UserSession.SessionUID.ToString(), "Insert", "Product", name);
         }
 
         public async Task UpdateProductAsync(int id, string name, int price, int stock, int unit, string category)
@@ -97,6 +98,7 @@ namespace RapiMesa.Data
 
             SyncQueue.Enqueue(new UpdateRowOp("Product", row1, new object[] { id, name, price, stock, unit, category }));
             SheetsRepo.Invalidate("Product");
+            ChangeLogger.Log(UserSession.SessionUID.ToString(), "Update", "Product", $"{id}:{name}");
         }
 
         public async Task DeleteProductAsync(int id)
@@ -107,6 +109,7 @@ namespace RapiMesa.Data
 
             SyncQueue.Enqueue(new DeleteRowOp("Product", row1 - 1)); // 0-based
             SheetsRepo.Invalidate("Product");
+            ChangeLogger.Log(UserSession.SessionUID.ToString(), "Delete", "Product", id.ToString());
         }
 
         public async Task InsertCategoryAsync(string categoryItem)

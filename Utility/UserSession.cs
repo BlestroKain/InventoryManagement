@@ -1,4 +1,8 @@
-﻿public static class UserSession
+namespace RapiMesa.Utility
 {
-    public static int SessionUID { get; set; }
+    public static class UserSession
+    {
+        public static int SessionUID { get; set; }
+        public static UserRole Role { get; set; }
+    }
 }

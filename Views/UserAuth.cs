@@ -69,6 +69,7 @@ namespace RapiMesa.Views
                     if (uid > 0)
                     {
                         UserSession.SessionUID = uid;
+                        UserSession.Role = await accountManager.GetUserRoleAsync(uid);
                         var mainpage = new MainView(username);
                         mainpage.FormClosed += (s, args) => this.Close();
                         mainpage.Show();
