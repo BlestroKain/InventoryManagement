@@ -70,6 +70,9 @@
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="BouncyCastle.Cryptography, Version=2.0.0.0, Culture=neutral, PublicKeyToken=072edcf4a5328938, processorArchitecture=MSIL">
+      <HintPath>packages\BouncyCastle.Cryptography.2.4.0\lib\net461\BouncyCastle.Cryptography.dll</HintPath>
+    </Reference>
     <Reference Include="Google.Apis, Version=1.70.0.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
       <HintPath>packages\Google.Apis.1.70.0\lib\net462\Google.Apis.dll</HintPath>
     </Reference>
@@ -81,6 +84,9 @@
     </Reference>
     <Reference Include="Google.Apis.Sheets.v4, Version=1.70.0.3819, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
       <HintPath>packages\Google.Apis.Sheets.v4.1.70.0.3819\lib\net462\Google.Apis.Sheets.v4.dll</HintPath>
+    </Reference>
+    <Reference Include="itextsharp, Version=5.5.13.4, Culture=neutral, PublicKeyToken=8354ae6d2174ddca, processorArchitecture=MSIL">
+      <HintPath>packages\iTextSharp.5.5.13.4\lib\net461\itextsharp.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Data.Sqlite, Version=9.0.8.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
       <HintPath>packages\Microsoft.Data.Sqlite.Core.9.0.8\lib\netstandard2.0\Microsoft.Data.Sqlite.dll</HintPath>
@@ -138,6 +144,9 @@
     <Compile Include="Utility\PointOfSale.cs" />
     <Compile Include="Utility\TransactionIdGenerator.cs" />
     <Compile Include="Utility\UserSession.cs" />
+    <Compile Include="Utility\UserRole.cs" />
+    <Compile Include="Utility\ChangeLogger.cs" />
+    <Compile Include="Utility\ExportHelper.cs" />
     <Compile Include="Utility\ThemeManager.cs" />
     <Compile Include="Utility\DataGridViewFader.cs" />
     <Compile Include="Utility\PlaceholderIcons.cs" />

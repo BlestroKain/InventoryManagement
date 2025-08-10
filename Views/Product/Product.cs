@@ -27,6 +27,7 @@ namespace RapiMesa
 
         private async void Product_Shown(object sender, EventArgs e)
         {
+            await LoadCategoriesAsync();
             await LoadProductsAsync();
         }
 
@@ -36,10 +37,28 @@ namespace RapiMesa
             SetColumnHeaders();
         }
 
+        private async Task LoadCategoriesAsync()
+        {
+            var items = await productManager.GetCategoryItemsAsync();
+            comboBoxCategory.Items.Clear();
+            comboBoxCategory.Items.Add("Todos");
+            comboBoxCategory.Items.AddRange(items);
+            comboBoxCategory.SelectedIndex = 0;
+        }
+
         // Búsqueda y visualización
         private async Task PerformSearchAsync()
         {
-            DataTable dt = await productManager.SearchProductsAsync(textBox1.Text);
+            int? min = numericMinPrice.Value > 0 ? (int?)numericMinPrice.Value : null;
+            int? max = numericMaxPrice.Value > 0 ? (int?)numericMaxPrice.Value : null;
+            string category = comboBoxCategory.SelectedIndex > 0 ? comboBoxCategory.SelectedItem?.ToString() : null;
+            if (min.HasValue && max.HasValue && min > max)
+            {
+                var tmp = min;
+                min = max;
+                max = tmp;
+            }
+            DataTable dt = await productManager.SearchProductsAsync(textBox1.Text, min, max, category);
             dataGridView1.DataSource = dt;
             SetColumnHeaders();
         }
@@ -64,6 +83,11 @@ namespace RapiMesa
             {
                 await PerformSearchAsync(); // tu Search ya maneja vacío → devuelve todo
             }
+        }
+
+        private async void FilterChanged(object sender, EventArgs e)
+        {
+            await PerformSearchAsync();
         }
 
         private void SetColumnHeaders()
@@ -216,6 +240,28 @@ namespace RapiMesa
             using (var historyForm = new History(id))
             {
                 historyForm.ShowDialog();
+            }
+        }
+
+        // EXPORT BUTTON
+        private void ExportBtn_Click(object sender, EventArgs e)
+        {
+            using (var sfd = new SaveFileDialog())
+            {
+                sfd.Filter = "CSV (*.csv)|*.csv|PDF (*.pdf)|*.pdf";
+                sfd.FileName = "productos";
+                if (sfd.ShowDialog() == DialogResult.OK)
+                {
+                    try
+                    {
+                        ExportHelper.ExportToFile(dataGridView1, sfd.FileName);
+                        MessageBox.Show("Exportación completada.", "Exportar", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("Error al exportar: " + ex.Message, "Exportar", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
             }
         }
 

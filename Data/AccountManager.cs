@@ -2,6 +2,7 @@ using System;
 using System.Data;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using RapiMesa.Utility;
 
 namespace RapiMesa.Data
 {
@@ -76,6 +77,25 @@ namespace RapiMesa.Data
                     return true;
             }
             return false;
+        }
+
+        public async Task<UserRole> GetUserRoleAsync(int uid)
+        {
+            var dt = await SheetsRepo.ReadTableCachedAsync("Account");
+            foreach (DataRow r in dt.Rows)
+            {
+                if (ToInt(r["Uid"]) == uid)
+                {
+                    if (dt.Columns.Contains("Role"))
+                    {
+                        var roleStr = r["Role"]?.ToString();
+                        if (Enum.TryParse<UserRole>(roleStr, true, out var role))
+                            return role;
+                    }
+                    break;
+                }
+            }
+            return UserRole.Administrator;
         }
 
         // ======= UTILIDADES =======
