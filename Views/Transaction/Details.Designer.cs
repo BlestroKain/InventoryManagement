@@ -68,6 +68,8 @@
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
+            this.Font = new System.Drawing.Font("News706 BT", 12F, System.Drawing.FontStyle.Bold);
+
             this.Name = "Details";
             this.ShowIcon = false;
             this.ShowInTaskbar = false;

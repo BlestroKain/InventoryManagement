@@ -2,6 +2,7 @@
 using System.Data;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using RapiMesa.Utility;
 using RapiMesa.Data;
 using RapiMesa.InventoryApp.dlg;
 
@@ -14,6 +15,7 @@ namespace RapiMesa
         public Product()
         {
             InitializeComponent();
+            ThemeManager.ApplyTheme(this);
             productManager = new ProductManager();
 
             // Carga inicial asíncrona (mejor en Shown que en el ctor)

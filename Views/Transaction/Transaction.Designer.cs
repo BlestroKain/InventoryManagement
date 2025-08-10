@@ -75,6 +75,8 @@
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
+            this.Font = new System.Drawing.Font("News706 BT", 12F, System.Drawing.FontStyle.Bold);
+
             this.Name = "Transaction";
             this.ShowIcon = false;
             this.Text = "Transaction";

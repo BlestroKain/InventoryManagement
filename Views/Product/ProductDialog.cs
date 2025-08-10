@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using RapiMesa.Utility;
 using RapiMesa.Data;
 
 namespace RapiMesa
@@ -15,6 +16,7 @@ namespace RapiMesa
         public ProductDialog(ProductManager manager)
         {
             InitializeComponent();
+            ThemeManager.ApplyTheme(this);
             productManager = manager ?? throw new ArgumentNullException(nameof(manager));
             itemId = 0;
 

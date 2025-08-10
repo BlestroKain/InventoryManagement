@@ -2,6 +2,7 @@
 using System.Data;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using RapiMesa.Utility;
 using RapiMesa.Data;
 
 namespace RapiMesa.InventoryApp.Views
@@ -13,6 +14,7 @@ namespace RapiMesa.InventoryApp.Views
         public Sale()
         {
             InitializeComponent();
+            ThemeManager.ApplyTheme(this);
             cartManager = new CartManager();
 
             // Cargar asíncrono cuando el form se muestra (permite await)

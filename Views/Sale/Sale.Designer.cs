@@ -111,6 +111,8 @@
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.button2);
             this.Controls.Add(this.button1);
+            this.Font = new System.Drawing.Font("News706 BT", 12F, System.Drawing.FontStyle.Bold);
+
             this.Name = "Cart";
             this.Text = "Carrito";
             this.groupBox1.ResumeLayout(false);
