@@ -13,21 +13,49 @@ namespace RapiMesa.Data
         public async Task<DataTable> GetProductsAsync()
             => await SheetsRepo.ReadTableCachedAsync("Product");
 
-        public async Task<DataTable> SearchProductsAsync(string term)
+        public async Task<DataTable> SearchProductsAsync(
+            string term,
+            int? minPrice = null,
+            int? maxPrice = null,
+            string category = null)
         {
             var dt = await GetProductsAsync();
-            if (string.IsNullOrWhiteSpace(term)) return dt;
 
-            term = term.Trim().ToLowerInvariant();
-            var filtered = dt.Clone();
+            var rows = dt.AsEnumerable();
 
-            foreach (DataRow r in dt.Rows)
+            if (!string.IsNullOrWhiteSpace(term))
             {
-                var name = r["Name"]?.ToString()?.ToLowerInvariant() ?? "";
-                var cat = r["Category"]?.ToString()?.ToLowerInvariant() ?? "";
-                if (name.Contains(term) || cat.Contains(term))
-                    filtered.Rows.Add(r.ItemArray);
+                term = term.Trim().ToLowerInvariant();
+                rows = rows.Where(r =>
+                    (r["Name"]?.ToString()?.ToLowerInvariant().Contains(term) ?? false) ||
+                    (r["Category"]?.ToString()?.ToLowerInvariant().Contains(term) ?? false));
             }
+
+            if (minPrice.HasValue)
+            {
+                rows = rows.Where(r =>
+                    int.TryParse(r["Price"]?.ToString(), out var p) && p >= minPrice.Value);
+            }
+
+            if (maxPrice.HasValue)
+            {
+                rows = rows.Where(r =>
+                    int.TryParse(r["Price"]?.ToString(), out var p) && p <= maxPrice.Value);
+            }
+
+            if (!string.IsNullOrWhiteSpace(category))
+            {
+                var cat = category.Trim();
+                rows = rows.Where(r =>
+                    string.Equals(r["Category"]?.ToString()?.Trim(), cat, StringComparison.OrdinalIgnoreCase));
+            }
+
+            var filtered = dt.Clone();
+            foreach (var r in rows)
+            {
+                filtered.Rows.Add(r.ItemArray);
+            }
+
             return filtered;
         }
 

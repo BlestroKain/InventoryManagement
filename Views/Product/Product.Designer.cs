@@ -37,8 +37,16 @@
             this.HistoryBtn = new System.Windows.Forms.Button();
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.SearchBtn = new System.Windows.Forms.Button();
+            this.labelCategory = new System.Windows.Forms.Label();
+            this.comboBoxCategory = new System.Windows.Forms.ComboBox();
+            this.labelMinPrice = new System.Windows.Forms.Label();
+            this.numericMinPrice = new System.Windows.Forms.NumericUpDown();
+            this.labelMaxPrice = new System.Windows.Forms.Label();
+            this.numericMaxPrice = new System.Windows.Forms.NumericUpDown();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numericMinPrice)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numericMaxPrice)).BeginInit();
             this.SuspendLayout();
             // 
             // AddBtn
@@ -160,12 +168,80 @@
             this.SearchBtn.Text = "BUSCAR";
             this.SearchBtn.UseVisualStyleBackColor = true;
             this.SearchBtn.Click += new System.EventHandler(this.button6_Click);
+            //
+            // labelCategory
+            //
+            this.labelCategory.AutoSize = true;
+            this.labelCategory.Location = new System.Drawing.Point(20, 10);
+            this.labelCategory.Name = "labelCategory";
+            this.labelCategory.Size = new System.Drawing.Size(85, 19);
+            this.labelCategory.TabIndex = 7;
+            this.labelCategory.Text = "Categoría:";
+            //
+            // comboBoxCategory
+            //
+            this.comboBoxCategory.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBoxCategory.Location = new System.Drawing.Point(111, 6);
+            this.comboBoxCategory.Name = "comboBoxCategory";
+            this.comboBoxCategory.Size = new System.Drawing.Size(160, 27);
+            this.comboBoxCategory.TabIndex = 8;
+            this.comboBoxCategory.SelectedIndexChanged += new System.EventHandler(this.FilterChanged);
+            //
+            // labelMinPrice
+            //
+            this.labelMinPrice.AutoSize = true;
+            this.labelMinPrice.Location = new System.Drawing.Point(290, 10);
+            this.labelMinPrice.Name = "labelMinPrice";
+            this.labelMinPrice.Size = new System.Drawing.Size(88, 19);
+            this.labelMinPrice.TabIndex = 9;
+            this.labelMinPrice.Text = "Precio Min:";
+            //
+            // numericMinPrice
+            //
+            this.numericMinPrice.Location = new System.Drawing.Point(386, 8);
+            this.numericMinPrice.Maximum = new decimal(new int[] {
+            1000000,
+            0,
+            0,
+            0});
+            this.numericMinPrice.Name = "numericMinPrice";
+            this.numericMinPrice.Size = new System.Drawing.Size(90, 27);
+            this.numericMinPrice.TabIndex = 10;
+            this.numericMinPrice.ValueChanged += new System.EventHandler(this.FilterChanged);
+            //
+            // labelMaxPrice
+            //
+            this.labelMaxPrice.AutoSize = true;
+            this.labelMaxPrice.Location = new System.Drawing.Point(486, 10);
+            this.labelMaxPrice.Name = "labelMaxPrice";
+            this.labelMaxPrice.Size = new System.Drawing.Size(92, 19);
+            this.labelMaxPrice.TabIndex = 11;
+            this.labelMaxPrice.Text = "Precio Max:";
+            //
+            // numericMaxPrice
+            //
+            this.numericMaxPrice.Location = new System.Drawing.Point(586, 8);
+            this.numericMaxPrice.Maximum = new decimal(new int[] {
+            1000000,
+            0,
+            0,
+            0});
+            this.numericMaxPrice.Name = "numericMaxPrice";
+            this.numericMaxPrice.Size = new System.Drawing.Size(90, 27);
+            this.numericMaxPrice.TabIndex = 12;
+            this.numericMaxPrice.ValueChanged += new System.EventHandler(this.FilterChanged);
             // 
             // Product
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(10F, 19F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1290, 732);
+            this.Controls.Add(this.numericMaxPrice);
+            this.Controls.Add(this.labelMaxPrice);
+            this.Controls.Add(this.numericMinPrice);
+            this.Controls.Add(this.labelMinPrice);
+            this.Controls.Add(this.comboBoxCategory);
+            this.Controls.Add(this.labelCategory);
             this.Controls.Add(this.SearchBtn);
             this.Controls.Add(this.textBox1);
             this.Controls.Add(this.HistoryBtn);
@@ -181,6 +257,8 @@
             this.Text = "Producto";
             this.groupBox1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numericMinPrice)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numericMaxPrice)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -197,6 +275,12 @@
         private System.Windows.Forms.Button HistoryBtn;
         private System.Windows.Forms.TextBox textBox1;
         private System.Windows.Forms.Button SearchBtn;
+        private System.Windows.Forms.Label labelCategory;
+        private System.Windows.Forms.ComboBox comboBoxCategory;
+        private System.Windows.Forms.Label labelMinPrice;
+        private System.Windows.Forms.NumericUpDown numericMinPrice;
+        private System.Windows.Forms.Label labelMaxPrice;
+        private System.Windows.Forms.NumericUpDown numericMaxPrice;
     }
 }
 

@@ -27,6 +27,7 @@ namespace RapiMesa
 
         private async void Product_Shown(object sender, EventArgs e)
         {
+            await LoadCategoriesAsync();
             await LoadProductsAsync();
         }
 
@@ -36,10 +37,28 @@ namespace RapiMesa
             SetColumnHeaders();
         }
 
+        private async Task LoadCategoriesAsync()
+        {
+            var items = await productManager.GetCategoryItemsAsync();
+            comboBoxCategory.Items.Clear();
+            comboBoxCategory.Items.Add("Todos");
+            comboBoxCategory.Items.AddRange(items);
+            comboBoxCategory.SelectedIndex = 0;
+        }
+
         // Búsqueda y visualización
         private async Task PerformSearchAsync()
         {
-            DataTable dt = await productManager.SearchProductsAsync(textBox1.Text);
+            int? min = numericMinPrice.Value > 0 ? (int?)numericMinPrice.Value : null;
+            int? max = numericMaxPrice.Value > 0 ? (int?)numericMaxPrice.Value : null;
+            string category = comboBoxCategory.SelectedIndex > 0 ? comboBoxCategory.SelectedItem?.ToString() : null;
+            if (min.HasValue && max.HasValue && min > max)
+            {
+                var tmp = min;
+                min = max;
+                max = tmp;
+            }
+            DataTable dt = await productManager.SearchProductsAsync(textBox1.Text, min, max, category);
             dataGridView1.DataSource = dt;
             SetColumnHeaders();
         }
@@ -64,6 +83,11 @@ namespace RapiMesa
             {
                 await PerformSearchAsync(); // tu Search ya maneja vacío → devuelve todo
             }
+        }
+
+        private async void FilterChanged(object sender, EventArgs e)
+        {
+            await PerformSearchAsync();
         }
 
         private void SetColumnHeaders()
