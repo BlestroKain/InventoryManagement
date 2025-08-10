@@ -41,9 +41,9 @@
             // 
             // textBox2
             // 
-            this.textBox2.Location = new System.Drawing.Point(78, 56);
+            this.textBox2.Location = new System.Drawing.Point(108, 56);
             this.textBox2.Name = "textBox2";
-            this.textBox2.Size = new System.Drawing.Size(274, 20);
+            this.textBox2.Size = new System.Drawing.Size(244, 27);
             this.textBox2.TabIndex = 2;
             this.textBox2.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.textBox2_KeyPress);
             // 
@@ -52,7 +52,7 @@
             this.label2.AutoSize = true;
             this.label2.Location = new System.Drawing.Point(11, 47);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(49, 13);
+            this.label2.Size = new System.Drawing.Size(79, 19);
             this.label2.TabIndex = 3;
             this.label2.Text = "Category";
             // 
@@ -93,13 +93,14 @@
             // 
             // CatDialog
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(10F, 19F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(393, 185);
             this.ControlBox = false;
             this.Controls.Add(this.button1);
             this.Controls.Add(this.textBox2);
             this.Controls.Add(this.groupBox1);
+            this.Font = new System.Drawing.Font("News706 BT", 12F, System.Drawing.FontStyle.Bold);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.Name = "CatDialog";
             this.ShowInTaskbar = false;

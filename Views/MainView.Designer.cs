@@ -30,6 +30,7 @@
         {
             this.components = new System.ComponentModel.Container();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.darkModeChk = new System.Windows.Forms.CheckBox();
             this.radioButton5 = new System.Windows.Forms.RadioButton();
             this.button1 = new System.Windows.Forms.Button();
             this.radioButton4 = new System.Windows.Forms.RadioButton();
@@ -44,6 +45,7 @@
             // panel1
             // 
             this.panel1.BackColor = System.Drawing.Color.Gainsboro;
+            this.panel1.Controls.Add(this.darkModeChk);
             this.panel1.Controls.Add(this.radioButton5);
             this.panel1.Controls.Add(this.button1);
             this.panel1.Controls.Add(this.radioButton4);
@@ -57,13 +59,28 @@
             this.panel1.Size = new System.Drawing.Size(277, 732);
             this.panel1.TabIndex = 0;
             // 
+            // darkModeChk
+            // 
+            this.darkModeChk.Appearance = System.Windows.Forms.Appearance.Button;
+            this.darkModeChk.BackColor = System.Drawing.Color.DimGray;
+            this.darkModeChk.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.darkModeChk.Location = new System.Drawing.Point(2, 290);
+            this.darkModeChk.Margin = new System.Windows.Forms.Padding(5, 4, 5, 4);
+            this.darkModeChk.Name = "darkModeChk";
+            this.darkModeChk.Size = new System.Drawing.Size(275, 56);
+            this.darkModeChk.TabIndex = 6;
+            this.darkModeChk.Text = "Dark Mode";
+            this.darkModeChk.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.darkModeChk.UseVisualStyleBackColor = false;
+            this.darkModeChk.CheckedChanged += new System.EventHandler(this.darkModeChk_CheckedChanged);
+            // 
             // radioButton5
             // 
             this.radioButton5.Appearance = System.Windows.Forms.Appearance.Button;
             this.radioButton5.BackColor = System.Drawing.Color.RosyBrown;
             this.radioButton5.Checked = true;
             this.radioButton5.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.radioButton5.Location = new System.Drawing.Point(2, 70);
+            this.radioButton5.Location = new System.Drawing.Point(2, 5);
             this.radioButton5.Margin = new System.Windows.Forms.Padding(5, 4, 5, 4);
             this.radioButton5.Name = "radioButton5";
             this.radioButton5.Size = new System.Drawing.Size(275, 56);
@@ -92,7 +109,7 @@
             this.radioButton4.Appearance = System.Windows.Forms.Appearance.Button;
             this.radioButton4.BackColor = System.Drawing.Color.RosyBrown;
             this.radioButton4.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.radioButton4.Location = new System.Drawing.Point(2, 298);
+            this.radioButton4.Location = new System.Drawing.Point(2, 233);
             this.radioButton4.Margin = new System.Windows.Forms.Padding(5, 4, 5, 4);
             this.radioButton4.Name = "radioButton4";
             this.radioButton4.Size = new System.Drawing.Size(275, 56);
@@ -107,7 +124,7 @@
             this.radioButton3.Appearance = System.Windows.Forms.Appearance.Button;
             this.radioButton3.BackColor = System.Drawing.Color.RosyBrown;
             this.radioButton3.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.radioButton3.Location = new System.Drawing.Point(2, 241);
+            this.radioButton3.Location = new System.Drawing.Point(2, 176);
             this.radioButton3.Margin = new System.Windows.Forms.Padding(5, 4, 5, 4);
             this.radioButton3.Name = "radioButton3";
             this.radioButton3.Size = new System.Drawing.Size(275, 56);
@@ -122,7 +139,7 @@
             this.radioButton1.Appearance = System.Windows.Forms.Appearance.Button;
             this.radioButton1.BackColor = System.Drawing.Color.RosyBrown;
             this.radioButton1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.radioButton1.Location = new System.Drawing.Point(2, 127);
+            this.radioButton1.Location = new System.Drawing.Point(2, 62);
             this.radioButton1.Margin = new System.Windows.Forms.Padding(5, 4, 5, 4);
             this.radioButton1.Name = "radioButton1";
             this.radioButton1.Size = new System.Drawing.Size(275, 56);
@@ -137,7 +154,7 @@
             this.radioButton2.Appearance = System.Windows.Forms.Appearance.Button;
             this.radioButton2.BackColor = System.Drawing.Color.RosyBrown;
             this.radioButton2.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.radioButton2.Location = new System.Drawing.Point(2, 184);
+            this.radioButton2.Location = new System.Drawing.Point(2, 119);
             this.radioButton2.Margin = new System.Windows.Forms.Padding(5, 4, 5, 4);
             this.radioButton2.Name = "radioButton2";
             this.radioButton2.Size = new System.Drawing.Size(275, 56);
@@ -166,15 +183,18 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(10F, 19F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.ClientSize = new System.Drawing.Size(1390, 732);
             this.Controls.Add(this.panel2);
             this.Controls.Add(this.panel1);
             this.Font = new System.Drawing.Font("News706 BT", 12F, System.Drawing.FontStyle.Bold);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Margin = new System.Windows.Forms.Padding(5, 4, 5, 4);
             this.MinimumSize = new System.Drawing.Size(1406, 771);
             this.Name = "MainView";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "RapiMesa";
+            this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
             this.panel1.ResumeLayout(false);
             this.ResumeLayout(false);
 
@@ -190,6 +210,7 @@
         private System.Windows.Forms.RadioButton radioButton4;
         private System.Windows.Forms.Timer itemCountTimer;
         private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.CheckBox darkModeChk;
         private System.Windows.Forms.RadioButton radioButton5;
     }
 }

@@ -3,6 +3,7 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using RapiMesa.Utility;
 using RapiMesa.Data;
 using RapiMesa.Views.Transaction;
 
@@ -13,6 +14,7 @@ namespace RapiMesa.Views.Transaction
         public Transaction()
         {
             InitializeComponent();
+            ThemeManager.ApplyTheme(this);
 
             this.Shown -= Transaction_Shown;
             this.Shown += Transaction_Shown;

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using RapiMesa.Utility;
 using RapiMesa.Data;
 
 namespace RapiMesa
@@ -13,6 +14,7 @@ namespace RapiMesa
         public AddStock(string name)
         {
             InitializeComponent();
+            ThemeManager.ApplyTheme(this);
             stockManager = new StockManager();
             itemName = name ?? "";
             label3.Text = itemName;
