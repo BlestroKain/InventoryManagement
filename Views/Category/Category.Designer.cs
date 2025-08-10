@@ -112,6 +112,7 @@
             this.Controls.Add(this.EditBtn);
             this.Controls.Add(this.AddBtn);
             this.Font = new System.Drawing.Font("News706 BT", 12F, System.Drawing.FontStyle.Bold);
+            this.Icon = System.Drawing.SystemIcons.Application;
             this.Name = "Category";
             this.Text = "Category";
             this.groupBox1.ResumeLayout(false);

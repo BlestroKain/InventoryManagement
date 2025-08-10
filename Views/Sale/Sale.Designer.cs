@@ -112,6 +112,7 @@
             this.Controls.Add(this.button2);
             this.Controls.Add(this.button1);
             this.Font = new System.Drawing.Font("News706 BT", 12F, System.Drawing.FontStyle.Bold);
+            this.Icon = System.Drawing.SystemIcons.Application;
             this.Name = "Sale";
             this.Text = "Carrito";
             this.groupBox1.ResumeLayout(false);

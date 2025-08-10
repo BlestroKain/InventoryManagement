@@ -15,7 +15,7 @@ namespace RapiMesa
             Application.SetCompatibleTextRenderingDefault(false);
 
             Application.ThreadException += (s, e) => HandleException(e.Exception);
-            AppDomain.CurrentDomain.UnhandledException += (s, e) => HandleException(e.Exception as Exception);
+            AppDomain.CurrentDomain.UnhandledException += (s, e) => HandleException(e.ExceptionObject as Exception);
 
             try
             {

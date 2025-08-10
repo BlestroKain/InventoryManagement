@@ -349,6 +349,8 @@
             this.Controls.Add(this.tableLayoutPanel1);
             this.Font = new System.Drawing.Font("News706 BT", 12F, System.Drawing.FontStyle.Bold);
 
+            this.Icon = System.Drawing.SystemIcons.Application;
+
             this.Name = "Dashboard";
             this.Text = "Dashboard";
             this.tableKpis.ResumeLayout(false);
