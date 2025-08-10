@@ -83,18 +83,21 @@ namespace RapiMesa.Views.Dashboard
                 // caché 45s
                 if (force || DateTime.Now >= _cacheUntil)
                 {
-                    _tDt = await SheetsRepo.ReadTableAsync("Transaction");
-                    _pDt = await SheetsRepo.ReadTableAsync("Product");
-                    _cDt = await SheetsRepo.ReadTableAsync("Category");
-                    _oDt = await SheetsRepo.ReadTableAsync("Orders");
+                    _tDt = await SheetsRepo.ReadTableCachedAsync("Transaction");
+                    _pDt = await SheetsRepo.ReadTableCachedAsync("Product");
+                    _cDt = await SheetsRepo.ReadTableCachedAsync("Category");
+                    _oDt = await SheetsRepo.ReadTableCachedAsync("Orders");
 
-                    // construir mapa TransactionId -> Date
+                    // construir mapa TransactionId -> Date (robusto a espacios/duplicados)
                     _transDateMap = _tDt.AsEnumerable()
-                        .Where(r => r["TransactionId"] != null)
-                        .ToDictionary(
-                            r => r["TransactionId"].ToString(),
-                            r => ParseDate(r["Date"])
-                        );
+                        .Select(r => new {
+                            Tid = (r["TransactionId"]?.ToString() ?? "").Trim(),
+                            Date = ParseDate(r["Date"])
+                        })
+                        .Where(x => !string.IsNullOrEmpty(x.Tid))
+                        .GroupBy(x => x.Tid, StringComparer.OrdinalIgnoreCase)
+                        .ToDictionary(g => g.Key, g => g.First().Date, StringComparer.OrdinalIgnoreCase);
+
 
                     _cacheUntil = DateTime.Now.AddSeconds(45);
                 }
@@ -194,6 +197,9 @@ namespace RapiMesa.Views.Dashboard
             ca.AxisX.MajorGrid.Enabled = false;
             ca.AxisY.MajorGrid.Enabled = false;
 
+            // opcional: que el mayor quede arriba
+            ca.AxisY.IsReversed = true;
+
             var from = DateTime.Today.AddDays(-30);
             var to = DateTime.Today;
 
@@ -203,13 +209,13 @@ namespace RapiMesa.Views.Dashboard
             {
                 foreach (DataRow r in _oDt.Rows)
                 {
-                    var tid = r["TransactionId"]?.ToString();
+                    var tid = (r["TransactionId"]?.ToString() ?? "").Trim();
                     if (string.IsNullOrEmpty(tid)) continue;
 
                     if (!_transDateMap.TryGetValue(tid, out var dt)) continue;
                     if (dt < from || dt > to) continue;
 
-                    var name = r["Name"]?.ToString() ?? "";
+                    var name = (r["Name"]?.ToString() ?? "").Trim();
                     int qty = SafeInt(r["Quantity"]);
 
                     if (!dict.ContainsKey(name)) dict[name] = 0;
@@ -217,7 +223,8 @@ namespace RapiMesa.Views.Dashboard
                 }
             }
 
-            foreach (var kv in dict.OrderByDescending(x => x.Value).Take(5).Reverse())
+            // agrega en orden DESC directo (sin Reverse)
+            foreach (var kv in dict.OrderByDescending(x => x.Value).Take(5))
                 s.Points.AddXY(kv.Key, kv.Value);
         }
 
@@ -321,13 +328,13 @@ namespace RapiMesa.Views.Dashboard
 
             foreach (DataRow r in orders.Rows)
             {
-                var tid = r["TransactionId"]?.ToString();
+                var tid = (r["TransactionId"]?.ToString() ?? "").Trim();
                 if (string.IsNullOrEmpty(tid)) continue;
 
                 if (!_transDateMap.TryGetValue(tid, out var dt)) continue;
                 if (dt < from || dt > to) continue;
 
-                var name = r["Name"]?.ToString() ?? "";
+                var name = (r["Name"]?.ToString() ?? "").Trim();
                 int q = SafeInt(r["Quantity"]);
                 if (!dict.ContainsKey(name)) dict[name] = 0;
                 dict[name] += q;
@@ -337,6 +344,7 @@ namespace RapiMesa.Views.Dashboard
             var top = dict.OrderByDescending(x => x.Value).First();
             return (top.Key, top.Value);
         }
+
 
         // ---------- Parsers util ----------
 

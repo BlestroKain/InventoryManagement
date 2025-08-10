@@ -116,10 +116,10 @@
             // AddStockBtn
             // 
             this.AddStockBtn.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.AddStockBtn.Location = new System.Drawing.Point(1120, 596);
+            this.AddStockBtn.Location = new System.Drawing.Point(1115, 597);
             this.AddStockBtn.Margin = new System.Windows.Forms.Padding(5, 4, 5, 4);
             this.AddStockBtn.Name = "AddStockBtn";
-            this.AddStockBtn.Size = new System.Drawing.Size(150, 44);
+            this.AddStockBtn.Size = new System.Drawing.Size(169, 44);
             this.AddStockBtn.TabIndex = 4;
             this.AddStockBtn.Text = "AGREGAR STOCK";
             this.AddStockBtn.UseVisualStyleBackColor = true;
@@ -128,10 +128,10 @@
             // HistoryBtn
             // 
             this.HistoryBtn.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.HistoryBtn.Location = new System.Drawing.Point(1120, 649);
+            this.HistoryBtn.Location = new System.Drawing.Point(1115, 649);
             this.HistoryBtn.Margin = new System.Windows.Forms.Padding(5, 4, 5, 4);
             this.HistoryBtn.Name = "HistoryBtn";
-            this.HistoryBtn.Size = new System.Drawing.Size(150, 44);
+            this.HistoryBtn.Size = new System.Drawing.Size(169, 44);
             this.HistoryBtn.TabIndex = 5;
             this.HistoryBtn.Text = "HISTORIAL";
             this.HistoryBtn.UseVisualStyleBackColor = true;

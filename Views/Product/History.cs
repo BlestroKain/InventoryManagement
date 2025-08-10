@@ -31,7 +31,7 @@ namespace RapiMesa.InventoryApp.dlg
             try
             {
                 // Leemos toda la hoja History
-                DataTable all = await SheetsRepo.ReadTableAsync("History");
+                DataTable all = await SheetsRepo.ReadTableCachedAsync("History");
 
                 // Filtramos por ProductID
                 DataTable dt = all.Clone();

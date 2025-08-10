@@ -2,6 +2,7 @@
 using Google.Apis.Sheets.v4;
 using Google.Apis.Sheets.v4.Data;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -33,7 +34,24 @@ namespace RapiMesa.Data
             }
             return dt;
         }
+        private static readonly ConcurrentDictionary<string, (DateTime until, DataTable dt)> _cache
+      = new ConcurrentDictionary<string, (DateTime, DataTable)>();
 
+        public static async Task<DataTable> ReadTableCachedAsync(string sheet, int ttlSeconds = 45)
+        {
+            if (_cache.TryGetValue(sheet, out var hit) && DateTime.UtcNow < hit.until)
+                return hit.dt.Copy(); // devolver copia para no mutar en UI
+
+            var fresh = await ReadTableAsync(sheet);   // tu método actual que lee de Sheets
+            _cache[sheet] = (DateTime.UtcNow.AddSeconds(ttlSeconds), fresh);
+            return fresh.Copy();
+        }
+
+        // Si necesitas invalidar manualmente tras escribir:
+        public static void Invalidate(string sheet)
+        {
+            _cache.TryRemove(sheet, out _);
+        }
         // Append una fila (RAW)
         public static async Task AppendRowAsync(string sheet, IList<object> values)
         {
@@ -43,13 +61,27 @@ namespace RapiMesa.Data
             await req.ExecuteAsync();
         }
 
-        public static async Task UpdateCellAsync(string a1, object value)
+        public static async Task UpdateCellAsync(string a1Range, object value)
         {
-            var body = new ValueRange { Values = new[] { new List<object> { value } } };
-            var req = SheetsClient.Service.Spreadsheets.Values.Update(body, SheetsClient.SpreadsheetId, a1);
+            // a1Range ejemplo: "Cart!F12"
+            var excl = a1Range.IndexOf('!');
+            if (excl <= 0) throw new ArgumentException("Rango A1 inválido", nameof(a1Range));
+
+            var sheetName = a1Range.Substring(0, excl);
+
+            var body = new ValueRange
+            {
+                Values = new[] { new System.Collections.Generic.List<object> { value ?? "" } }
+            };
+            var req = SheetsClient.Service.Spreadsheets.Values.Update(SheetsClient.ValueRange(body), SheetsClient.SpreadsheetId, a1Range);
             req.ValueInputOption = SpreadsheetsResource.ValuesResource.UpdateRequest.ValueInputOptionEnum.RAW;
             await req.ExecuteAsync();
+
+            Invalidate(sheetName); // para que la próxima lectura venga fresca
         }
+
+    
+    
 
         // Update fila completa en rango A#:Z# con valores
         public static async Task UpdateRowAsync(string sheet, int rowIndex1, IList<object> values)
@@ -93,7 +125,7 @@ namespace RapiMesa.Data
         // Busca la fila (1-based) por igualdad exacta en una columna (por nombre de encabezado)
         public static async Task<(int row1, DataRow row)> FindRowByAsync(string sheet, string columnName, string equalsValue)
         {
-            var dt = await ReadTableAsync(sheet);
+            var dt = await ReadTableCachedAsync(sheet);
             if (!dt.Columns.Contains(columnName)) return (0, null);
 
             for (int i = 0; i < dt.Rows.Count; i++)
@@ -110,7 +142,7 @@ namespace RapiMesa.Data
         // Siguiente Id incremental (max + 1) en columna "Id"
         public static async Task<int> NextIdAsync(string sheet, string idColumn = "Id")
         {
-            var dt = await ReadTableAsync(sheet);
+            var dt = await ReadTableCachedAsync(sheet);
             int max = 0;
             foreach (DataRow r in dt.Rows)
                 if (int.TryParse(r[idColumn]?.ToString(), out var v) && v > max) max = v;

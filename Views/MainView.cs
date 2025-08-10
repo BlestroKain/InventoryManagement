@@ -16,7 +16,7 @@ namespace RapiMesa
         private Form currentForm;
         private readonly CartManager cartManager;
 
-
+        private bool _saleOpen;
         public MainView(string username)
         {
             InitializeComponent();
@@ -32,9 +32,10 @@ namespace RapiMesa
             this.Shown -= MainView_Shown;
             this.Shown += MainView_Shown;
 
-            // Timer
-            itemCountTimer = new Timer { Interval = 1500 }; // 1.5s, ajusta a gusto
-            itemCountTimer.Tick += async (s, e) => await RefreshCartCountAsync();
+            itemCountTimer = new Timer { Interval = 1500 }; // 15s mejor que 1s
+            itemCountTimer.Tick += itemCountTimer_Tick;
+            itemCountTimer.Start();
+        
         }
 
         private async void MainView_Shown(object sender, EventArgs e)
@@ -88,7 +89,16 @@ namespace RapiMesa
         private void radioButton3_CheckedChanged(object sender, EventArgs e)
         {
             if (radioButton3.Checked)
+            {
+                _saleOpen = true;
+                itemCountTimer.Stop();          // no martilles la API mientras se ve el carrito
                 SwitchForm(new Sale());
+            }
+            else
+            {
+                _saleOpen = false;
+                itemCountTimer.Start();
+            }
         }
 
         // TRANSACTION TAB

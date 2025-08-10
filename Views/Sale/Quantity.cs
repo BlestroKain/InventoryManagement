@@ -1,4 +1,5 @@
-﻿using System;
+﻿// UI/Quantity.cs
+using System;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using RapiMesa.Data;
@@ -7,84 +8,71 @@ namespace RapiMesa
 {
     public partial class Quantity : Form
     {
-        private readonly CartManager cartManager;
-        private readonly StockManager stockManager;
+        private readonly CartManager cartManager = new CartManager();
+        private readonly StockManager stockManager = new StockManager();
 
-        private readonly int cartId;     // <- para actualizar la fila del carrito
-        private readonly int productId;  // <- para validar stock
+        private readonly int _cartId;     // fila de Cart a actualizar
+        private readonly int _productId;  // para validar stock
 
-        public Quantity(int quantity, int cartId, int productId)
+        public Quantity(int currentQty, int cartId, int productId)
         {
             InitializeComponent();
-            this.cartId = cartId;
-            this.productId = productId;
-
-            textBox2.Text = quantity.ToString();
-
-            cartManager = new CartManager();
-            stockManager = new StockManager();
+            _cartId = cartId;
+            _productId = productId;
+            textBox2.Text = currentQty.ToString();
         }
 
-        // MINUS
-        private void button3_Click(object sender, EventArgs e)
+        private void button3_Click(object sender, EventArgs e) // -
         {
-            if (!int.TryParse(textBox2.Text, out int v)) return;
-            if (v > 1) textBox2.Text = (v - 1).ToString();
+            if (int.TryParse(textBox2.Text, out var v) && v > 1)
+                textBox2.Text = (v - 1).ToString();
         }
 
-        // PLUS (consulta stock en Sheets)
-        private async void button4_Click(object sender, EventArgs e)
+        private async void button4_Click(object sender, EventArgs e) // +
         {
-            if (!int.TryParse(textBox2.Text, out int v)) v = 1;
+            if (!int.TryParse(textBox2.Text, out var v)) v = 1;
             try
             {
-                int stock = await stockManager.GetProductStockAsync(productId);
+                var stock = await stockManager.GetProductStockAsync(_productId);
                 if (v < stock) textBox2.Text = (v + 1).ToString();
-                else MessageBox.Show("Límite de stock alcanzado.");
+                else MessageBox.Show("Stock limit reached.");
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error al verificar stock:\r\n" + ex.Message,
-                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Error checking stock:\r\n" + ex.Message);
             }
         }
 
-        // SAVE
-        private async void button1_Click(object sender, EventArgs e)
+        private async void button1_Click(object sender, EventArgs e) // Save
         {
-            if (!int.TryParse(textBox2.Text, out int qty) || qty <= 0)
+            if (!int.TryParse(textBox2.Text, out var qty) || qty <= 0)
             {
-                MessageBox.Show("Cantidad inválida.");
+                MessageBox.Show("Invalid quantity.");
                 return;
             }
 
             try
             {
-                ToggleButtons(false);
-                await cartManager.UpdateQuantityInCartAsync(cartId, qty); // <- cartId!
+                Toggle(false);
+                await cartManager.UpdateQuantityInCartAsync(_cartId, qty);
                 DialogResult = DialogResult.OK;
-                Close();
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error al actualizar el carrito:\r\n" + ex.Message,
-                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Error updating cart:\r\n" + ex.Message);
             }
             finally
             {
-                ToggleButtons(true);
+                Toggle(true);
+                Close();
             }
         }
 
-        // CANCEL
         private void button2_Click(object sender, EventArgs e) => Close();
 
-        private void ToggleButtons(bool enabled)
+        private void Toggle(bool en)
         {
-            button1.Enabled = enabled; // Save
-            button2.Enabled = enabled; // Cancel
-            button3.Enabled = enabled; // Minus
-            button4.Enabled = enabled; // Plus
+            button1.Enabled = button2.Enabled = button3.Enabled = button4.Enabled = en;
         }
     }
 }

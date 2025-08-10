@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Data;
+using System.Globalization;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using RapiMesa.Data;
-using RapiMesa.Utility;
+using RapiMesa.Data;      // CartManager (lee del cache)
+using RapiMesa.Utility;   // PointOfSale con ProcessTransactionAsync()
 
 namespace RapiMesa
 {
@@ -21,17 +22,25 @@ namespace RapiMesa
             cartManager = new CartManager();
             subtotal = totalPrice;
 
-            SubtotalLbl.Text = subtotal.ToString();
+            // Valores iniciales UI
+            SubtotalLbl.Text = subtotal.ToString(CultureInfo.InvariantCulture);
+            DiscountLbl.Text = "0";
+            TotalLbl.Text = SubtotalLbl.Text;
+            ChangeLbl.Text = "0";
 
-            // Inicializa descuentos y calcula totales iniciales
+            // Inicializa descuentos y calcula
             pointOfSale.InitializeComboBox(DiscountCmb);
             pointOfSale.CalculateDiscount(SubtotalLbl.Text, DiscountCmb.SelectedItem, DiscountLbl, TotalLbl);
 
-            // Cargar carrito en Shown para poder usar await sin congelar UI
-            this.Shown -= Checkout_Shown;
+            // Cableo de eventos (evita depender de nombres “comboBox1_…”, etc.)
             this.Shown += Checkout_Shown;
+            DiscountCmb.SelectedIndexChanged += DiscountCmb_SelectedIndexChanged;
+            CashTxt.TextChanged += CashTxt_TextChanged;
+            TotalLbl.TextChanged += TotalLbl_TextChanged;
+
         }
 
+        // Cargar carrito sin congelar UI
         private async void Checkout_Shown(object sender, EventArgs e)
         {
             await LoadCartItemsAsync();
@@ -40,84 +49,67 @@ namespace RapiMesa
         private async Task LoadCartItemsAsync()
         {
             listBox1.Items.Clear();
-            DataTable dt = await cartManager.GetCartItemsAsync();
 
+            DataTable dt = await cartManager.GetCartItemsAsync(); // ya viene del cache
             foreach (DataRow r in dt.Rows)
             {
                 string name = r["Name"]?.ToString() ?? "";
-                decimal price = 0;
-                int qty = 0;
-
-                decimal.TryParse(r["Price"]?.ToString(), out price);
-                int.TryParse(r["Quantity"]?.ToString(), out qty);
-
+                decimal price = ParseDec(r["Price"]);
+                int qty = SafeInt(r["Quantity"]);
                 listBox1.Items.Add($"{qty} x {name} - ${price}");
             }
         }
 
-        // ON TEXT CHANGED
-        public void ChangeEventHandler()
+        // Recalcula cambio cuando cambian Total o Cash
+        private void DiscountCmb_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (decimal.TryParse(CashTxt.Text, out _))
+            pointOfSale.CalculateDiscount(SubtotalLbl.Text, DiscountCmb.SelectedItem, DiscountLbl, TotalLbl);
+            RecalcChange();
+        }
+
+        private void CashTxt_TextChanged(object sender, EventArgs e) => RecalcChange();
+
+        private void TotalLbl_TextChanged(object sender, EventArgs e) => RecalcChange();
+
+        private void RecalcChange()
+        {
+            if (decimal.TryParse(CashTxt.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out _))
             {
                 pointOfSale.CalculateChange(TotalLbl, CashTxt, ChangeLbl);
             }
+            else
+            {
+                ChangeLbl.Text = "0";
+            }
         }
 
-        // COMBOBOX EVENT
-        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            pointOfSale.CalculateDiscount(SubtotalLbl.Text, DiscountCmb.SelectedItem, DiscountLbl, TotalLbl);
-        }
-
-        // TEXTBOX EVENT
-        private void textBox2_TextChanged(object sender, EventArgs e)
-        {
-            ChangeEventHandler();
-        }
-
-        // LABEL8 EVENT
-        private void label8_TextChanged(object sender, EventArgs e)
-        {
-            ChangeEventHandler();
-        }
-
-        // INSERT / PROCESS BUTTON
+        // Procesar/Vender
         private async void button1_Click(object sender, EventArgs e)
         {
-            // Generar TransactionId
             var transactionId = new TransactionIdGenerator().GenerateTransactionId();
 
             try
             {
-                // Recalcula por si cambió el descuento o cash
+                // Recalcula por si cambió el descuento
                 pointOfSale.CalculateDiscount(SubtotalLbl.Text, DiscountCmb.SelectedItem, DiscountLbl, TotalLbl);
+                RecalcChange();
 
-                // Asegura parseo de valores
-                decimal total = 0, cash = 0, discountAmount = 0;
-                double discountPercent = 0, change = 0;
+                // Validaciones básicas
+                decimal total = ParseDec(TotalLbl.Text);
+                decimal cash = ParseDec(CashTxt.Text);
 
-                decimal.TryParse(TotalLbl.Text, out total);
-                decimal.TryParse(CashTxt.Text, out cash);
-                decimal.TryParse(DiscountLbl.Text?.Replace("%",""), out var discParsed);
-                // Si DiscountLbl muestra “15%” usa percent, si muestra “$10” ajusta según tu UI
-                if (DiscountLbl.Text != null && DiscountLbl.Text.Contains("%"))
+                if (total <= 0)
                 {
-                    discountPercent = (double)discParsed;
+                    MessageBox.Show("El total debe ser mayor a 0.");
+                    return;
                 }
-                else
+                if (cash < total)
                 {
-                    decimal.TryParse(DiscountLbl.Text, out discountAmount);
+                    MessageBox.Show("El efectivo no alcanza para cubrir el total.");
+                    return;
                 }
-                decimal.TryParse(ChangeLbl.Text, out var changeDec);
-                change = (double)changeDec;
 
-                // Procesar transacción (Sheets)
-                // SUGERENCIA: crea PointOfSale.ProcessTransactionAsync que:
-                // - Inserte en Transaction
-                // - Inserte en Orders
-                // - Descuente stock en Product
-                // - Limpie Cart del usuario
+                // Procesa transacción contra cache + encola sync a Sheets (inside)
                 bool ok = await pointOfSale.ProcessTransactionAsync(
                     SubtotalLbl.Text,
                     CashTxt.Text,
@@ -128,7 +120,7 @@ namespace RapiMesa
 
                 if (ok)
                 {
-                    DialogResult = DialogResult.OK;
+                    DialogResult = DialogResult.OK; // cierra y refresca caller
                 }
             }
             catch (Exception ex)
@@ -142,10 +134,18 @@ namespace RapiMesa
             }
         }
 
-        // CANCEL BUTTON
-        private void button2_Click(object sender, EventArgs e)
+        // Cancelar
+        private void button2_Click(object sender, EventArgs e) => Close();
+
+        // ------- helpers -------
+        private static int SafeInt(object v) =>
+            int.TryParse(v?.ToString(), NumberStyles.Any, CultureInfo.InvariantCulture, out var n) ? n : 0;
+
+        private static decimal ParseDec(object v)
         {
-            Close();
+            if (v == null) return 0m;
+            var s = v.ToString().Trim().Replace("$", "").Replace("€", "").Replace("£", "").Replace(",", "");
+            return decimal.TryParse(s, NumberStyles.Any, CultureInfo.InvariantCulture, out var d) ? d : 0m;
         }
     }
 }

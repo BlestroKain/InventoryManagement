@@ -30,7 +30,7 @@ namespace RapiMesa.Views.Transaction
             {
                 int currentUID = UserSession.SessionUID;
 
-                DataTable all = await SheetsRepo.ReadTableAsync("Transaction"); // columnas: TransactionId, Subtotal, Cash, DiscountPercent, DiscountAmount, ChangeAmt, Total, Date, Uid
+                DataTable all = await SheetsRepo.ReadTableCachedAsync("Transaction"); // columnas: TransactionId, Subtotal, Cash, DiscountPercent, DiscountAmount, ChangeAmt, Total, Date, Uid
 
                 // Filtrar por Uid
                 var dt = all.Clone();

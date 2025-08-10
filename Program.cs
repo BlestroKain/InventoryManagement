@@ -1,4 +1,5 @@
-﻿using RapiMesa.Data;
+﻿using RapiMesa.Utility;
+using RapiMesa.Data;
 using RapiMesa.Views;
 using System;
 using System.Windows.Forms;
@@ -31,6 +32,7 @@ namespace RapiMesa
                 );
                 return;
             }
+            SyncQueue.Start();
 
             Application.Run(new UserAuth());
         }

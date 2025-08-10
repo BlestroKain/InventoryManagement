@@ -28,6 +28,8 @@
         /// </summary>
         private void InitializeComponent()
         {
+            
+
             this.label1 = new System.Windows.Forms.Label();
             this.CashTxt = new System.Windows.Forms.TextBox();
             this.CashLbl = new System.Windows.Forms.Label();
@@ -64,7 +66,8 @@
             this.CashTxt.Name = "CashTxt";
             this.CashTxt.Size = new System.Drawing.Size(237, 27);
             this.CashTxt.TabIndex = 2;
-            this.CashTxt.TextChanged += new System.EventHandler(this.textBox2_TextChanged);
+            this.CashTxt.TextChanged += new System.EventHandler(this.CashTxt_TextChanged);
+
             // 
             // CashLbl
             // 
@@ -151,7 +154,7 @@
             this.DiscountCmb.Name = "DiscountCmb";
             this.DiscountCmb.Size = new System.Drawing.Size(236, 27);
             this.DiscountCmb.TabIndex = 20;
-            this.DiscountCmb.SelectedIndexChanged += new System.EventHandler(this.comboBox1_SelectedIndexChanged);
+            this.DiscountCmb.SelectedIndexChanged += new System.EventHandler(this.DiscountCmb_SelectedIndexChanged);
             // 
             // TotalLbl
             // 
@@ -162,7 +165,7 @@
             this.TotalLbl.Size = new System.Drawing.Size(17, 19);
             this.TotalLbl.TabIndex = 19;
             this.TotalLbl.Text = "0";
-            this.TotalLbl.TextChanged += new System.EventHandler(this.label8_TextChanged);
+            this.TotalLbl.TextChanged += new System.EventHandler(this.TotalLbl_TextChanged);
             // 
             // DiscountLbl
             // 

@@ -77,5 +77,8 @@ namespace RapiMesa.Data
             upd.ValueInputOption = SpreadsheetsResource.ValuesResource.UpdateRequest.ValueInputOptionEnum.RAW;
             await upd.ExecuteAsync();
         }
+
+        // Overload útil para construir ValueRange rápido
+        public static ValueRange ValueRange(ValueRange vr) => vr;
     }
 }

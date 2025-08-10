@@ -75,30 +75,28 @@ namespace RapiMesa.InventoryApp.Views
         }
 
         // ADD QUANTITY BUTTON
+        // en Sale.cs (fragmento relevante)
         private async void button4_Click(object sender, EventArgs e)
         {
             if (dataGridView1.SelectedRows.Count == 0)
             {
-                MessageBox.Show("El carrito está vacío.", "Carrito vacío", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("El carrito está vacío.", "Carrito vacío",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
             var row = dataGridView1.SelectedRows[0];
 
-            // OJO: aunque estén ocultas, siguen estando en el DataSource
-            int cartId = Convert.ToInt32(row.Cells["Id"].Value);          // <-- para actualizar/eliminar
-            int productId = Convert.ToInt32(row.Cells["ProductId"].Value);   // <-- para validar stock en el diálogo
+            int cartId = Convert.ToInt32(row.Cells["Id"].Value);         // para actualizar
+            int productId = Convert.ToInt32(row.Cells["ProductId"].Value);  // para validar stock
             int quantity = Convert.ToInt32(row.Cells["Quantity"].Value);
 
-            using (var dlg = new Quantity(quantity, cartId, productId)) // ver abajo
+            using (var dlg = new Quantity(quantity, cartId, productId))
             {
                 if (dlg.ShowDialog() == DialogResult.OK)
-                {
                     await DisplayCartItemAsync();
-                }
             }
         }
-
 
         // REMOVE BUTTON
         private async void button2_Click(object sender, EventArgs e)

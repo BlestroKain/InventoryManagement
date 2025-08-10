@@ -31,7 +31,7 @@ namespace RapiMesa.Views.Transaction
             try
             {
                 // Leemos toda la hoja Orders
-                DataTable all = await SheetsRepo.ReadTableAsync("Orders");
+                DataTable all = await SheetsRepo.ReadTableCachedAsync("Orders");
 
                 // Filtramos por TransactionId
                 DataTable dt = all.Clone();

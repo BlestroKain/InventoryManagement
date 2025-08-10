@@ -16,7 +16,7 @@ namespace RapiMesa.Data
         // Valida credenciales; devuelve Uid (>0 si OK, 0 si falla)
         public async Task<int> ValidateUserCredentialsAsync(string username, string password)
         {
-            var dt = await SheetsRepo.ReadTableAsync("Account");
+            var dt = await SheetsRepo.ReadTableCachedAsync("Account");
             foreach (DataRow r in dt.Rows)
             {
                 var user = r["Username"]?.ToString();
@@ -69,7 +69,7 @@ namespace RapiMesa.Data
         // Comprueba si ya existe el username
         public async Task<bool> IsUsernameExistsAsync(string username)
         {
-            var dt = await SheetsRepo.ReadTableAsync("Account");
+            var dt = await SheetsRepo.ReadTableCachedAsync("Account");
             foreach (DataRow r in dt.Rows)
             {
                 if (string.Equals(r["Username"]?.ToString(), username, StringComparison.OrdinalIgnoreCase))

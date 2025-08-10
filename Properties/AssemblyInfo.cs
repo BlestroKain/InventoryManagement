@@ -29,7 +29,7 @@ using System.Resources;
 [assembly: AssemblyInformationalVersion("1.2.3")]
 
 // Copyright (ajusta el año)
-[assembly: AssemblyCopyright("© 2025 GauchoLoco Entertaiment")]
+[assembly: AssemblyCopyright("© 2025 GauchoLoco Entertainment")]
 
 // (Opcional) Si tienes un proyecto de tests y quieres ver internals
 // [assembly: InternalsVisibleTo("RapiMesa.Tests")]

@@ -133,6 +133,8 @@
     <Compile Include="Data\StockManager.cs" />
     <Compile Include="Data\TransactionManager.cs" />
     <Compile Include="Data\AccountManager.cs" />
+    <Compile Include="Utility\CacheStore.cs" />
+    <Compile Include="Utility\SyncQueue.cs" />
     <Compile Include="Utility\PointOfSale.cs" />
     <Compile Include="Utility\TransactionIdGenerator.cs" />
     <Compile Include="Utility\UserSession.cs" />
