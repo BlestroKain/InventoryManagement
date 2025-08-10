@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using RapiMesa.Utility;
 using RapiMesa.Data;
 using RapiMesa.InventoryApp;
 
@@ -14,6 +15,7 @@ namespace RapiMesa.Views
         public UserAuth()
         {
             InitializeComponent();
+            ThemeManager.ApplyTheme(this);
             accountManager = new AccountManager();
         }
 

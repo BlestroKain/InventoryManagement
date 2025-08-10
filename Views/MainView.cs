@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using RapiMesa.Utility;
 using RapiMesa.Data;
 using RapiMesa.InventoryApp.dlg;
 using RapiMesa.InventoryApp.Views;
@@ -20,6 +21,7 @@ namespace RapiMesa
         public MainView(string username)
         {
             InitializeComponent();
+            ThemeManager.ApplyTheme(this);
 
             cartManager = new CartManager();
 
@@ -76,6 +78,11 @@ namespace RapiMesa
         {
             if (radioButton1.Checked)
                 SwitchForm(new Product());
+        }
+
+        private void darkModeChk_CheckedChanged(object sender, EventArgs e)
+        {
+            ThemeManager.ToggleDarkMode();
         }
 
         // CATEGORY TAB

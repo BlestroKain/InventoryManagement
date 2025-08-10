@@ -92,7 +92,7 @@
             // lblSalesToday
             // 
             this.lblSalesToday.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblSalesToday.Font = new System.Drawing.Font("Segoe UI", 16F, System.Drawing.FontStyle.Bold);
+            this.lblSalesToday.Font = new System.Drawing.Font("News706 BT", 12F, System.Drawing.FontStyle.Bold);
             this.lblSalesToday.Location = new System.Drawing.Point(3, 16);
             this.lblSalesToday.Name = "lblSalesToday";
             this.lblSalesToday.Size = new System.Drawing.Size(153, 70);
@@ -114,7 +114,7 @@
             // lblSalesMonth
             // 
             this.lblSalesMonth.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblSalesMonth.Font = new System.Drawing.Font("Segoe UI", 16F, System.Drawing.FontStyle.Bold);
+            this.lblSalesMonth.Font = new System.Drawing.Font("News706 BT", 12F, System.Drawing.FontStyle.Bold);
             this.lblSalesMonth.Location = new System.Drawing.Point(3, 16);
             this.lblSalesMonth.Name = "lblSalesMonth";
             this.lblSalesMonth.Size = new System.Drawing.Size(153, 70);
@@ -136,7 +136,7 @@
             // lblAvgTicket
             // 
             this.lblAvgTicket.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblAvgTicket.Font = new System.Drawing.Font("Segoe UI", 16F, System.Drawing.FontStyle.Bold);
+            this.lblAvgTicket.Font = new System.Drawing.Font("News706 BT", 12F, System.Drawing.FontStyle.Bold);
             this.lblAvgTicket.Location = new System.Drawing.Point(3, 16);
             this.lblAvgTicket.Name = "lblAvgTicket";
             this.lblAvgTicket.Size = new System.Drawing.Size(153, 70);
@@ -158,7 +158,7 @@
             // lblLowStock
             // 
             this.lblLowStock.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblLowStock.Font = new System.Drawing.Font("Segoe UI", 16F, System.Drawing.FontStyle.Bold);
+            this.lblLowStock.Font = new System.Drawing.Font("News706 BT", 12F, System.Drawing.FontStyle.Bold);
             this.lblLowStock.Location = new System.Drawing.Point(3, 16);
             this.lblLowStock.Name = "lblLowStock";
             this.lblLowStock.Size = new System.Drawing.Size(153, 70);
@@ -180,7 +180,7 @@
             // lblInventoryValue
             // 
             this.lblInventoryValue.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblInventoryValue.Font = new System.Drawing.Font("Segoe UI", 16F, System.Drawing.FontStyle.Bold);
+            this.lblInventoryValue.Font = new System.Drawing.Font("News706 BT", 12F, System.Drawing.FontStyle.Bold);
             this.lblInventoryValue.Location = new System.Drawing.Point(3, 16);
             this.lblInventoryValue.Name = "lblInventoryValue";
             this.lblInventoryValue.Size = new System.Drawing.Size(153, 70);
@@ -202,7 +202,7 @@
             // lblTopProduct
             // 
             this.lblTopProduct.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblTopProduct.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
+            this.lblTopProduct.Font = new System.Drawing.Font("News706 BT", 12F, System.Drawing.FontStyle.Bold);
             this.lblTopProduct.Location = new System.Drawing.Point(3, 16);
             this.lblTopProduct.Name = "lblTopProduct";
             this.lblTopProduct.Size = new System.Drawing.Size(157, 70);
@@ -347,6 +347,8 @@
             this.Controls.Add(this.splitCharts);
             this.Controls.Add(this.tableKpis);
             this.Controls.Add(this.tableLayoutPanel1);
+            this.Font = new System.Drawing.Font("News706 BT", 12F, System.Drawing.FontStyle.Bold);
+
             this.Name = "Dashboard";
             this.Text = "Dashboard";
             this.tableKpis.ResumeLayout(false);

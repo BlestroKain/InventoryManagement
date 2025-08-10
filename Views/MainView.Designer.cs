@@ -30,6 +30,7 @@
         {
             this.components = new System.ComponentModel.Container();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.darkModeChk = new System.Windows.Forms.CheckBox();
             this.radioButton5 = new System.Windows.Forms.RadioButton();
             this.button1 = new System.Windows.Forms.Button();
             this.radioButton4 = new System.Windows.Forms.RadioButton();
@@ -44,6 +45,7 @@
             // panel1
             // 
             this.panel1.BackColor = System.Drawing.Color.Gainsboro;
+            this.panel1.Controls.Add(this.darkModeChk);
             this.panel1.Controls.Add(this.radioButton5);
             this.panel1.Controls.Add(this.button1);
             this.panel1.Controls.Add(this.radioButton4);
@@ -56,9 +58,24 @@
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(277, 732);
             this.panel1.TabIndex = 0;
-            // 
+            //
+            // darkModeChk
+            //
+            this.darkModeChk.Appearance = System.Windows.Forms.Appearance.Button;
+            this.darkModeChk.BackColor = System.Drawing.Color.RosyBrown;
+            this.darkModeChk.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.darkModeChk.Location = new System.Drawing.Point(2, 14);
+            this.darkModeChk.Margin = new System.Windows.Forms.Padding(5, 4, 5, 4);
+            this.darkModeChk.Name = "darkModeChk";
+            this.darkModeChk.Size = new System.Drawing.Size(275, 56);
+            this.darkModeChk.TabIndex = 6;
+            this.darkModeChk.Text = "Dark Mode";
+            this.darkModeChk.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.darkModeChk.UseVisualStyleBackColor = false;
+            this.darkModeChk.CheckedChanged += new System.EventHandler(this.darkModeChk_CheckedChanged);
+            //
             // radioButton5
-            // 
+            //
             this.radioButton5.Appearance = System.Windows.Forms.Appearance.Button;
             this.radioButton5.BackColor = System.Drawing.Color.RosyBrown;
             this.radioButton5.Checked = true;
@@ -190,6 +207,7 @@
         private System.Windows.Forms.RadioButton radioButton4;
         private System.Windows.Forms.Timer itemCountTimer;
         private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.CheckBox darkModeChk;
         private System.Windows.Forms.RadioButton radioButton5;
     }
 }

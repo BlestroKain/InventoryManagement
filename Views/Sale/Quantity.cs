@@ -2,6 +2,7 @@
 using System;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using RapiMesa.Utility;
 using RapiMesa.Data;
 
 namespace RapiMesa
@@ -17,6 +18,7 @@ namespace RapiMesa
         public Quantity(int currentQty, int cartId, int productId)
         {
             InitializeComponent();
+            ThemeManager.ApplyTheme(this);
             _cartId = cartId;
             _productId = productId;
             textBox2.Text = currentQty.ToString();
