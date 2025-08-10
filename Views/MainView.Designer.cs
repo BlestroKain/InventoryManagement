@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            System.Windows.Forms.Panel panel3;
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainView));
             this.panel1 = new System.Windows.Forms.Panel();
             this.darkModeChk = new System.Windows.Forms.CheckBox();
@@ -40,12 +41,14 @@
             this.radioButton2 = new System.Windows.Forms.RadioButton();
             this.panel2 = new System.Windows.Forms.Panel();
             this.itemCountTimer = new System.Windows.Forms.Timer(this.components);
+            panel3 = new System.Windows.Forms.Panel();
             this.panel1.SuspendLayout();
             this.SuspendLayout();
             // 
             // panel1
             // 
             this.panel1.BackColor = System.Drawing.Color.Gainsboro;
+            this.panel1.Controls.Add(panel3);
             this.panel1.Controls.Add(this.darkModeChk);
             this.panel1.Controls.Add(this.radioButton5);
             this.panel1.Controls.Add(this.button1);
@@ -179,6 +182,16 @@
             // itemCountTimer
             // 
             this.itemCountTimer.Tick += new System.EventHandler(this.itemCountTimer_Tick);
+            // 
+            // panel3
+            // 
+            panel3.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("panel3.BackgroundImage")));
+            panel3.Enabled = false;
+            panel3.Location = new System.Drawing.Point(5, 354);
+            panel3.Margin = new System.Windows.Forms.Padding(5, 4, 5, 4);
+            panel3.Name = "panel3";
+            panel3.Size = new System.Drawing.Size(267, 273);
+            panel3.TabIndex = 7;
             // 
             // MainView
             // 

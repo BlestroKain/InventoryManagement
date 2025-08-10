@@ -78,6 +78,7 @@
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.MinimizeBox = false;
+    this.Icon = System.Drawing.SystemIcons.Application;
             this.Name = "Transaction";
             this.ShowIcon = false;
             this.Text = "Transaction";

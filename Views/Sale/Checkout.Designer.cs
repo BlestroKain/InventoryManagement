@@ -28,8 +28,8 @@
         /// </summary>
         private void InitializeComponent()
         {
-            
-
+            this.components = new System.ComponentModel.Container();
+            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.label1 = new System.Windows.Forms.Label();
             this.CashTxt = new System.Windows.Forms.TextBox();
             this.CashLbl = new System.Windows.Forms.Label();
@@ -87,7 +87,9 @@
             this.CancelBtn.Name = "CancelBtn";
             this.CancelBtn.Size = new System.Drawing.Size(115, 41);
             this.CancelBtn.TabIndex = 10;
-            this.CancelBtn.Text = "CANCELAR";
+            this.CancelBtn.Text = "";
+            this.CancelBtn.Image = System.Drawing.SystemIcons.Hand.ToBitmap();
+            this.toolTip1.SetToolTip(this.CancelBtn, "Cancelar");
             this.CancelBtn.UseVisualStyleBackColor = false;
             this.CancelBtn.Click += new System.EventHandler(this.button2_Click);
             // 
@@ -99,7 +101,9 @@
             this.PayBtn.Name = "PayBtn";
             this.PayBtn.Size = new System.Drawing.Size(111, 41);
             this.PayBtn.TabIndex = 11;
-            this.PayBtn.Text = "PAGAR";
+            this.PayBtn.Text = "";
+            this.PayBtn.Image = System.Drawing.SystemIcons.Shield.ToBitmap();
+            this.toolTip1.SetToolTip(this.PayBtn, "Pagar");
             this.PayBtn.UseVisualStyleBackColor = false;
             this.PayBtn.Click += new System.EventHandler(this.button1_Click);
             // 
@@ -267,5 +271,6 @@
         private System.Windows.Forms.ComboBox DiscountCmb;
         private System.Windows.Forms.Label ChangeLbl;
         private System.Windows.Forms.Label label9;
+        private System.Windows.Forms.ToolTip toolTip1;
     }
 }

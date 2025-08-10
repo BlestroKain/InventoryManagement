@@ -5,6 +5,8 @@ using System.Windows.Forms;
 using RapiMesa.Utility;
 using RapiMesa.Data;
 using RapiMesa.InventoryApp.dlg;
+using System.Drawing;
+using System.IO;
 
 namespace RapiMesa
 {
@@ -264,8 +266,6 @@ namespace RapiMesa
                 }
             }
         }
-
-        // Añade la columna de botón "Add" si no existe, y engancha a un ÚNICO handler async
         private void SetupAddToCartButton()
         {
             if (dataGridView1.Columns["AddToCart"] == null)
@@ -276,13 +276,41 @@ namespace RapiMesa
                     HeaderText = "",
                     Text = "Agregar",
                     UseColumnTextForButtonValue = true,
-                    Width = 60
+                    Width = 50 ,// espacio para icono + texto
+                   
                 };
                 dataGridView1.Columns.Add(btnCol);
             }
 
+            dataGridView1.CellPainting -= DataGridView1_CellPainting_AddButtonIcon;
+            dataGridView1.CellPainting += DataGridView1_CellPainting_AddButtonIcon;
+
             dataGridView1.CellContentClick -= dataGridView1_CellContentClick;
             dataGridView1.CellContentClick += dataGridView1_CellContentClick;
+        }
+
+        private void DataGridView1_CellPainting_AddButtonIcon(object sender, DataGridViewCellPaintingEventArgs e)
+        {
+            if (e.ColumnIndex >= 0 && dataGridView1.Columns[e.ColumnIndex].Name == "AddToCart" && e.RowIndex >= 0)
+            {
+                e.Paint(e.CellBounds, DataGridViewPaintParts.All);
+
+                // Ruta absoluta en tiempo de ejecución
+                string iconPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "add_to_cart.png");
+
+                if (File.Exists(iconPath))
+                {
+                    using (var icon = Image.FromFile(iconPath))
+                    {
+                        int iconSize = 20;
+                        int iconX = e.CellBounds.Left + 5;
+                        int iconY = e.CellBounds.Top + (e.CellBounds.Height - iconSize) / 2;
+                        e.Graphics.DrawImage(icon, new Rectangle(iconX, iconY, iconSize, iconSize));
+                    }
+                }
+
+                e.Handled = true;
+            }
         }
 
         // EVENTO CLICK DEL BOTÓN EN EL DATAGRID (async)
