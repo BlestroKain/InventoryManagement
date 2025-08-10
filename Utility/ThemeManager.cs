@@ -2,6 +2,7 @@ using System;
 using System.Drawing;
 using System.Runtime.CompilerServices;
 using System.Windows.Forms;
+using RapiMesa.Properties;
 
 namespace RapiMesa.Utility
 {
@@ -18,6 +19,11 @@ namespace RapiMesa.Utility
 
         public static bool IsDarkMode { get; private set; }
 
+        static ThemeManager()
+        {
+            IsDarkMode = Properties.Settings.Default.DarkMode;
+        }
+
         // Guardamos colores originales sin usar Tag (evita colisiones)
         private class ControlColors
         {
@@ -32,6 +38,8 @@ namespace RapiMesa.Utility
         public static void ToggleDarkMode()
         {
             IsDarkMode = !IsDarkMode;
+            Properties.Settings.Default.DarkMode = IsDarkMode;
+            Properties.Settings.Default.Save();
             foreach (Form f in Application.OpenForms)
                 ApplyTheme(f);
         }
@@ -52,7 +60,7 @@ namespace RapiMesa.Utility
         {
             if (control == null) return;
 
-            // Opt-out f·cil
+            // Opt-out f√°cil
             if (control.Tag is string tag && tag.Equals("NoTheme", StringComparison.OrdinalIgnoreCase))
                 return;
 
@@ -136,7 +144,7 @@ namespace RapiMesa.Utility
                 else RestoreColors(control);
             }
 
-            // RecursiÛn
+            // Recursi√≥n
             foreach (Control child in control.Controls)
                 ApplyTheme(child);
         }
@@ -145,6 +153,8 @@ namespace RapiMesa.Utility
         {
             grid.ColumnHeadersDefaultCellStyle.Font = new Font("News706 BT", 12F, FontStyle.Bold);
             grid.DefaultCellStyle.Font = new Font("News706 BT", 12F, FontStyle.Bold);
+
+            DataGridViewFader.Attach(grid);
 
             if (IsDarkMode)
             {
@@ -183,7 +193,7 @@ namespace RapiMesa.Utility
             else
             {
                 grid.EnableHeadersVisualStyles = true;
-                // Restaurar lo que el diseÒador/tema del SO traiga
+                // Restaurar lo que el dise√±ador/tema del SO traiga
                 RestoreColors(grid);
                 grid.AlternatingRowsDefaultCellStyle = new DataGridViewCellStyle(); // reset
             }
