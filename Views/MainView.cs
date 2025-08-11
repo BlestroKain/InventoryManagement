@@ -41,7 +41,10 @@ namespace RapiMesa
             itemCountTimer = new Timer { Interval = 1500 }; // 15s mejor que 1s
             itemCountTimer.Tick += itemCountTimer_Tick;
             itemCountTimer.Start();
-        
+
+            SetupPermissions();
+            StartInactivityMonitor();
+
         }
 
         private async void MainView_Shown(object sender, EventArgs e)
@@ -119,6 +122,13 @@ namespace RapiMesa
                 SwitchForm(new Transaction());
         }
 
+        // ACCOUNTS TAB
+        private void radioButton6_CheckedChanged(object sender, EventArgs e)
+        {
+            if (radioButton6.Checked)
+                SwitchForm(new Accounts());
+        }
+
         // LOGOUT BUTTON
         private void button1_Click(object sender, EventArgs e)
         {
@@ -128,11 +138,50 @@ namespace RapiMesa
                     MessageBoxButtons.YesNo,
                     MessageBoxIcon.Warning) == DialogResult.Yes)
             {
-                var userauth = new UserAuth();
-                userauth.FormClosed += (s, args) => this.Close();
-                userauth.Show();
-                Hide();
+                Logout();
             }
+        }
+
+        private void Logout()
+        {
+            InactivityMonitor.Stop();
+            var userauth = new UserAuth();
+            userauth.FormClosed += (s, args) => this.Close();
+            userauth.Show();
+            Hide();
+        }
+
+        private void SetupPermissions()
+        {
+            if (UserSession.Role == UserRole.Cashier)
+            {
+                radioButton2.Enabled = false;
+            }
+
+            if (UserSession.Role != UserRole.Administrator)
+            {
+                radioButton6.Enabled = false;
+            }
+        }
+
+        private void StartInactivityMonitor()
+        {
+            InactivityMonitor.Start(300, () =>
+            {
+                if (InvokeRequired)
+                {
+                    BeginInvoke(new Action(() =>
+                    {
+                        MessageBox.Show("Sesión bloqueada por inactividad.", "Inactividad", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        Logout();
+                    }));
+                }
+                else
+                {
+                    MessageBox.Show("Sesión bloqueada por inactividad.", "Inactividad", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    Logout();
+                }
+            });
         }
 
         // CART COUNTER (async)

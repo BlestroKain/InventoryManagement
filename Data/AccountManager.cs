@@ -6,7 +6,7 @@ using RapiMesa.Utility;
 
 namespace RapiMesa.Data
 {
-    class AccountManager
+    public class AccountManager
     {
         private const int SaltSize = 16; // 128 bits
         private const int KeySize = 32; // 256 bits
@@ -35,8 +35,9 @@ namespace RapiMesa.Data
                 {
                     int uid = ToInt(r["Uid"]);
                     int row1 = FindRow1(dt, r); // fila 1-based (incluye header)
+                    var roleVal = dt.Columns.Contains("Role") ? r["Role"]?.ToString() : "";
                     await SheetsRepo.UpdateRowAsync("Account", row1,
-                        new object[] { uid, user, HashPassword(password) });
+                        new object[] { uid, user, HashPassword(password), roleVal });
                     return uid;
                 }
 
@@ -45,8 +46,14 @@ namespace RapiMesa.Data
             return 0; // no existe
         }
 
-        // Registra usuario (con hash); muestra mensajes como antes
-        public async Task RegisterUserAsync(string username, string password)
+        // Obtiene todas las cuentas
+        public async Task<DataTable> GetAccountsAsync()
+        {
+            return await SheetsRepo.ReadTableCachedAsync("Account");
+        }
+
+        // Registra usuario (con hash) y rol
+        public async Task RegisterUserAsync(string username, string password, UserRole role = UserRole.Cashier)
         {
             if (await IsUsernameExistsAsync(username))
             {
@@ -59,7 +66,8 @@ namespace RapiMesa.Data
 
             int uid = await SheetsRepo.NextIdAsync("Account", "Uid");
             await SheetsRepo.AppendRowAsync("Account",
-                new object[] { uid, username, HashPassword(password) });
+                new object[] { uid, username, HashPassword(password), role.ToString() });
+            SheetsRepo.Invalidate("Account");
 
             MessageBox.Show(
                 "Registro exitoso",
@@ -68,15 +76,50 @@ namespace RapiMesa.Data
         }
 
         // Comprueba si ya existe el username
-        public async Task<bool> IsUsernameExistsAsync(string username)
+        public async Task<bool> IsUsernameExistsAsync(string username, int excludeUid = 0)
         {
             var dt = await SheetsRepo.ReadTableCachedAsync("Account");
             foreach (DataRow r in dt.Rows)
             {
-                if (string.Equals(r["Username"]?.ToString(), username, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(r["Username"]?.ToString(), username, StringComparison.OrdinalIgnoreCase)
+                    && ToInt(r["Uid"]) != excludeUid)
                     return true;
             }
             return false;
+        }
+
+        // Actualiza usuario existente
+        public async Task UpdateUserAsync(int uid, string username, string password, UserRole role)
+        {
+            if (await IsUsernameExistsAsync(username, uid))
+            {
+                MessageBox.Show(
+                    "El nombre de usuario ya existe.",
+                    "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            var (row1, row) = await SheetsRepo.FindRowByAsync("Account", "Uid", uid.ToString());
+            if (row1 <= 0) return;
+
+            string passHash = string.IsNullOrWhiteSpace(password)
+                ? row["Password"]?.ToString() ?? ""
+                : HashPassword(password);
+
+            await SheetsRepo.UpdateRowAsync("Account", row1,
+                new object[] { uid, username, passHash, role.ToString() });
+            SheetsRepo.Invalidate("Account");
+        }
+
+        // Elimina usuario
+        public async Task DeleteUserAsync(int uid)
+        {
+            var (row1, _) = await SheetsRepo.FindRowByAsync("Account", "Uid", uid.ToString());
+            if (row1 <= 0) return;
+
+            await SheetsRepo.DeleteRowAsync("Account", row1 - 1);
+            SheetsRepo.Invalidate("Account");
         }
 
         public async Task<UserRole> GetUserRoleAsync(int uid)

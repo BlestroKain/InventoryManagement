@@ -3,7 +3,7 @@ namespace RapiMesa.Utility
     public enum UserRole
     {
         Administrator,
-        Waiter,
+        Supervisor,
         Cashier
     }
 }

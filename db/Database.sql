@@ -64,9 +64,10 @@ CREATE TABLE [dbo].[Orders]
 -- Creates a table to store user information
 CREATE TABLE [dbo].[Account]
 (
-	[Uid] INT NOT NULL PRIMARY KEY IDENTITY (1000, 1), 
-    [Username] VARCHAR(50) NULL, 
-    [Password] VARCHAR(50) NULL, 
+        [Uid] INT NOT NULL PRIMARY KEY IDENTITY (1000, 1),
+    [Username] VARCHAR(50) NULL,
+    [Password] VARCHAR(50) NULL,
+    [Role] VARCHAR(20) NULL,
     [Email] VARCHAR(50) NULL,
 );
 

@@ -24,6 +24,14 @@ namespace RapiMesa
             this.Shown -= Product_Shown;
             this.Shown += Product_Shown;
 
+            if (UserSession.Role == UserRole.Cashier)
+            {
+                AddBtn.Enabled = false;
+                EditBtn.Enabled = false;
+                DeleteBtn.Enabled = false;
+                AddStockBtn.Enabled = false;
+            }
+
             SetupAddToCartButton();
         }
 
