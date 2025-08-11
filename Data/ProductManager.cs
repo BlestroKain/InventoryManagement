@@ -106,12 +106,29 @@ namespace RapiMesa.Data
                                        && SafeInt(r["Id"]) != id);
             if (exists) throw new Exception("Product already exists");
 
-            var (row1, _) = await SheetsRepo.FindRowByAsync("Product", "Id", id.ToString());
-            if (row1 == 0) throw new Exception("Product not found");
+            var (row1, row) = await SheetsRepo.FindRowByAsync("Product", "Id", id.ToString());
+            if (row1 == 0 || row == null) throw new Exception("Product not found");
+
+            int oldPrice = SafeInt(row["Price"]);
+            int oldStock = SafeInt(row["Stock"]);
 
             SyncQueue.Enqueue(new UpdateRowOp("Product", row1, new object[] { id, name, price, stock, unit, category }));
             SheetsRepo.Invalidate("Product");
-            ChangeLogger.Log(UserSession.SessionUID.ToString(), "Update", "Product", $"{id}:{name}");
+
+            string details = $"{id}:{name}";
+            bool changed = false;
+            if (oldPrice != price)
+            {
+                details += $"|Price {oldPrice}->{price}";
+                changed = true;
+            }
+            if (oldStock != stock)
+            {
+                details += $"|Stock {oldStock}->{stock}";
+                changed = true;
+            }
+            if (changed)
+                ChangeLogger.Log(UserSession.SessionUID.ToString(), "Update", "Product", details);
         }
 
         public async Task DeleteProductAsync(int id)

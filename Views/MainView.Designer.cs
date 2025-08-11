@@ -33,6 +33,7 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainView));
             this.panel1 = new System.Windows.Forms.Panel();
             this.darkModeChk = new System.Windows.Forms.CheckBox();
+            this.radioButton6 = new System.Windows.Forms.RadioButton();
             this.radioButton5 = new System.Windows.Forms.RadioButton();
             this.button1 = new System.Windows.Forms.Button();
             this.radioButton4 = new System.Windows.Forms.RadioButton();
@@ -49,6 +50,7 @@
             // 
             this.panel1.BackColor = System.Drawing.Color.Gainsboro;
             this.panel1.Controls.Add(panel3);
+            this.panel1.Controls.Add(this.radioButton6);
             this.panel1.Controls.Add(this.darkModeChk);
             this.panel1.Controls.Add(this.radioButton5);
             this.panel1.Controls.Add(this.button1);
@@ -68,15 +70,29 @@
             this.darkModeChk.Appearance = System.Windows.Forms.Appearance.Button;
             this.darkModeChk.BackColor = System.Drawing.Color.DimGray;
             this.darkModeChk.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.darkModeChk.Location = new System.Drawing.Point(2, 290);
+            this.darkModeChk.Location = new System.Drawing.Point(2, 347);
             this.darkModeChk.Margin = new System.Windows.Forms.Padding(5, 4, 5, 4);
             this.darkModeChk.Name = "darkModeChk";
             this.darkModeChk.Size = new System.Drawing.Size(275, 56);
-            this.darkModeChk.TabIndex = 6;
+            this.darkModeChk.TabIndex = 7;
             this.darkModeChk.Text = "Dark Mode";
             this.darkModeChk.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.darkModeChk.UseVisualStyleBackColor = false;
             this.darkModeChk.CheckedChanged += new System.EventHandler(this.darkModeChk_CheckedChanged);
+
+            // radioButton6
+            this.radioButton6.Appearance = System.Windows.Forms.Appearance.Button;
+            this.radioButton6.BackColor = System.Drawing.Color.RosyBrown;
+            this.radioButton6.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.radioButton6.Location = new System.Drawing.Point(2, 290);
+            this.radioButton6.Margin = new System.Windows.Forms.Padding(5, 4, 5, 4);
+            this.radioButton6.Name = "radioButton6";
+            this.radioButton6.Size = new System.Drawing.Size(275, 56);
+            this.radioButton6.TabIndex = 6;
+            this.radioButton6.Text = "Usuarios";
+            this.radioButton6.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.radioButton6.UseVisualStyleBackColor = false;
+            this.radioButton6.CheckedChanged += new System.EventHandler(this.radioButton6_CheckedChanged);
             // 
             // radioButton5
             // 
@@ -227,5 +243,6 @@
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.CheckBox darkModeChk;
         private System.Windows.Forms.RadioButton radioButton5;
+        private System.Windows.Forms.RadioButton radioButton6;
     }
 }

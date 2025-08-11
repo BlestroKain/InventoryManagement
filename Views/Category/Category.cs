@@ -21,6 +21,13 @@ namespace RapiMesa.InventoryApp.Views
             // Cargar asíncrono cuando el form se muestra
             this.Shown -= Category_Shown;
             this.Shown += Category_Shown;
+
+            if (UserSession.Role == UserRole.Cashier)
+            {
+                button1.Enabled = false;
+                button2.Enabled = false;
+                DeleteBtn.Enabled = false;
+            }
         }
 
         private async void Category_Shown(object sender, EventArgs e)

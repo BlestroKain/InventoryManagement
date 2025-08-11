@@ -200,6 +200,12 @@
     <Compile Include="Views\Category\CatDialog.Designer.cs">
       <DependentUpon>CatDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="Views\Account\UserDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Account\UserDialog.Designer.cs">
+      <DependentUpon>UserDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="Data\ConnectionManager.cs" />
     <Compile Include="Views\MainView.cs">
       <SubType>Form</SubType>
@@ -212,6 +218,12 @@
     </Compile>
     <Compile Include="Views\Category\Category.Designer.cs">
       <DependentUpon>Category.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Account\Accounts.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Account\Accounts.Designer.cs">
+      <DependentUpon>Accounts.cs</DependentUpon>
     </Compile>
     <Compile Include="Views\Product\AddStock.cs">
       <SubType>Form</SubType>
@@ -266,11 +278,17 @@
     <EmbeddedResource Include="Views\Category\CatDialog.resx">
       <DependentUpon>CatDialog.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Views\Account\UserDialog.resx">
+      <DependentUpon>UserDialog.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Views\MainView.resx">
       <DependentUpon>MainView.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Category\Category.resx">
       <DependentUpon>Category.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Account\Accounts.resx">
+      <DependentUpon>Accounts.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Product\AddStock.resx">
       <DependentUpon>AddStock.cs</DependentUpon>

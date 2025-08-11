@@ -45,6 +45,8 @@ namespace RapiMesa.Data
             var (row1, row) = await SheetsRepo.FindRowByAsync("Product", "Id", productId.ToString());
             if (row1 == 0 || row == null) throw new Exception("Product not found");
 
+            int oldStock = ToInt(row["Stock"]);
+
             // Reescribimos fila completa por consistencia
             var values = new object[]
             {
@@ -58,6 +60,8 @@ namespace RapiMesa.Data
 
             SyncQueue.Enqueue(new UpdateRowOp("Product", row1, values));
             SheetsRepo.Invalidate("Product");
+            if (oldStock != newStock)
+                ChangeLogger.Log(UserSession.SessionUID.ToString(), "StockUpdate", "Product", $"{productId}:{oldStock}->{newStock}");
         }
 
         // 4) Insertar historial de stocks (Append en background, Id local)
