@@ -229,7 +229,7 @@ namespace RapiMesa.Views.Dashboard
                 bool hasDate = HasColumn(_oDt, "Date");
                 foreach (DataRow r in _oDt.Rows)
                 {
-                    DateTime dt = DateTime.MinValue;
+                DateTime dt = DateTime.MinValue;
                     if (hasDate)
                         dt = ParseDate(r["Date"]);
 
@@ -239,8 +239,7 @@ namespace RapiMesa.Views.Dashboard
                         if (string.IsNullOrEmpty(tid) || _transDateMap == null || !_transDateMap.TryGetValue(tid, out dt))
                             continue;
                     }
-
-                    if (dt < from || dt > to) continue;
+                 (dt < from || dt > to) continue;
 
                     var name = (r["Name"]?.ToString() ?? "").Trim();
                     int qty = SafeInt(r["Quantity"]);
