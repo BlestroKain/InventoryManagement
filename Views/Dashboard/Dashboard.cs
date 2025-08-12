@@ -29,9 +29,9 @@ namespace RapiMesa.Views.Dashboard
             ThemeManager.ApplyTheme(this);
 
             // Rango
-            btn7d.Click += (s, e) => { _range = TimeRange.Last7; RefreshSalesChart(); };
-            btn30d.Click += (s, e) => { _range = TimeRange.Last30; RefreshSalesChart(); };
-            btnMes.Click += (s, e) => { _range = TimeRange.ThisMonth; RefreshSalesChart(); };
+            btn7d.Click += (s, e) => { _range = TimeRange.Last7; RefreshCharts(); };
+            btn30d.Click += (s, e) => { _range = TimeRange.Last30; RefreshCharts(); };
+            btnMes.Click += (s, e) => { _range = TimeRange.ThisMonth; RefreshCharts(); };
 
             // Refresh
             btnRefresh.Click += async (s, e) => await LoadStatsAsync(force: true);
@@ -112,7 +112,8 @@ namespace RapiMesa.Views.Dashboard
                 decimal avgTicket = transTodayCount > 0 ? salesToday / transTodayCount : 0m;
                 int lowStockCount = CountLowStock(_pDt, 5);
                 decimal invValue = InventoryValue(_pDt);
-                var (topName, topQty) = TopProductByQty(_oDt, today.AddDays(-30), today);
+                var (fromRange, toRange) = GetRangeBounds();
+                var (topName, topQty) = TopProductByQty(_oDt, fromRange, toRange);
 
                 lblSalesToday.Text = Money(salesToday);
                 lblSalesMonth.Text = Money(salesMonth);
@@ -122,8 +123,7 @@ namespace RapiMesa.Views.Dashboard
                 lblTopProduct.Text = topName == null ? "—" : $"{topName} ({topQty})";
 
                 // Charts
-                RefreshSalesChart();
-                RefreshTop5Chart();
+                RefreshCharts();
 
                 lblLastSync.Text = $"Última sync: {DateTime.Now:dd/MM HH:mm}";
             }
@@ -145,6 +145,31 @@ namespace RapiMesa.Views.Dashboard
             UseWaitCursor = busy;
         }
 
+        private void RefreshCharts()
+        {
+            RefreshSalesChart();
+            RefreshTop5Chart();
+        }
+
+        private (DateTime from, DateTime to) GetRangeBounds()
+        {
+            DateTime to = DateTime.Today;
+            DateTime from = to.AddDays(-6);
+            switch (_range)
+            {
+                case TimeRange.Last7:
+                    from = to.AddDays(-6);
+                    break;
+                case TimeRange.Last30:
+                    from = to.AddDays(-29);
+                    break;
+                case TimeRange.ThisMonth:
+                    from = new DateTime(to.Year, to.Month, 1);
+                    break;
+            }
+            return (from, to);
+        }
+
         // ---------- Charts ----------
 
         private void RefreshSalesChart()
@@ -158,14 +183,7 @@ namespace RapiMesa.Views.Dashboard
             ca.AxisY.LabelStyle.Format = "#,0";
             ca.AxisX.Interval = 1;
 
-            DateTime to = DateTime.Today, from;
-            switch (_range)
-            {
-                case TimeRange.Last7: from = to.AddDays(-6); break;
-                case TimeRange.Last30: from = to.AddDays(-29); break;
-                case TimeRange.ThisMonth: from = new DateTime(to.Year, to.Month, 1); break;
-                default: from = to.AddDays(-6); break;
-            }
+            var (from, to) = GetRangeBounds();
 
             // suma por día
             var perDay = new SortedDictionary<DateTime, decimal>();
@@ -202,19 +220,26 @@ namespace RapiMesa.Views.Dashboard
             // opcional: que el mayor quede arriba
             ca.AxisY.IsReversed = true;
 
-            var from = DateTime.Today.AddDays(-30);
-            var to = DateTime.Today;
+            var (from, to) = GetRangeBounds();
 
             var dict = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 
-            if (_oDt != null && _transDateMap != null)
+            if (_oDt != null)
             {
+                bool hasDate = HasColumn(_oDt, "Date");
                 foreach (DataRow r in _oDt.Rows)
                 {
-                    var tid = (r["TransactionId"]?.ToString() ?? "").Trim();
-                    if (string.IsNullOrEmpty(tid)) continue;
+                    DateTime dt = DateTime.MinValue;
+                    if (hasDate)
+                        dt = ParseDate(r["Date"]);
 
-                    if (!_transDateMap.TryGetValue(tid, out var dt)) continue;
+                    if (dt == DateTime.MinValue)
+                    {
+                        var tid = (r["TransactionId"]?.ToString() ?? "").Trim();
+                        if (string.IsNullOrEmpty(tid) || _transDateMap == null || !_transDateMap.TryGetValue(tid, out dt))
+                            continue;
+                    }
+
                     if (dt < from || dt > to) continue;
 
                     var name = (r["Name"]?.ToString() ?? "").Trim();
@@ -322,18 +347,30 @@ namespace RapiMesa.Views.Dashboard
             return acc;
         }
 
+        private static bool HasColumn(DataTable dt, string name) =>
+            dt?.Columns.Cast<DataColumn>()
+                   .Any(c => c.ColumnName.Equals(name, StringComparison.OrdinalIgnoreCase)) == true;
+
         private (string name, int qty) TopProductByQty(DataTable orders, DateTime from, DateTime to)
         {
-            if (orders == null || _transDateMap == null) return (null, 0);
+            if (orders == null) return (null, 0);
 
             var dict = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            bool hasDate = HasColumn(orders, "Date");
 
             foreach (DataRow r in orders.Rows)
             {
-                var tid = (r["TransactionId"]?.ToString() ?? "").Trim();
-                if (string.IsNullOrEmpty(tid)) continue;
+                DateTime dt = DateTime.MinValue;
+                if (hasDate)
+                    dt = ParseDate(r["Date"]);
 
-                if (!_transDateMap.TryGetValue(tid, out var dt)) continue;
+                if (dt == DateTime.MinValue)
+                {
+                    var tid = (r["TransactionId"]?.ToString() ?? "").Trim();
+                    if (string.IsNullOrEmpty(tid) || _transDateMap == null || !_transDateMap.TryGetValue(tid, out dt))
+                        continue;
+                }
+
                 if (dt < from || dt > to) continue;
 
                 var name = (r["Name"]?.ToString() ?? "").Trim();
