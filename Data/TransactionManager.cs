@@ -26,7 +26,7 @@ namespace RapiMesa.Data
             // 0) Tablas cache-first (rápidas); si necesitas “forzar”, has un Refresh en SheetsRepo antes
             var cartDt = await SheetsRepo.ReadTableCachedAsync("Cart");      // Id | ProductId | Uid | Name | Price | Quantity
             var prodDt = await SheetsRepo.ReadTableCachedAsync("Product");   // Id | Name | Price | Stock | Unit | Category
-            var ordersDt = await SheetsRepo.ReadTableCachedAsync("Orders");    // Id | TransactionId | Name | Price | Quantity | (Date?) opcional
+            var ordersDt = await SheetsRepo.ReadTableCachedAsync("Orders") ?? new DataTable();    // Id | TransactionId | Name | Price | Quantity | Date
             var historyDt = await SheetsRepo.ReadTableCachedAsync("History");   // Id | ProductID | Added Stocks | Date
 
             // 1) Filtrar carrito de este usuario, y guardar el índice 1-based (row1) para borrar luego
@@ -94,7 +94,7 @@ namespace RapiMesa.Data
             //    (no await => no te bloquea la UI, la cola maneja reintentos/exponencial)
             //    Calculamos nextId de History localmente
             int nextHistId = historyDt.AsEnumerable().Select(r => ToInt(r["Id"])).DefaultIfEmpty(0).Max() + 1;
-            string nowIso = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+            string timestampIso = currentDate.ToString("yyyy-MM-dd HH:mm:ss");
 
             foreach (var it in merged)
             {
@@ -118,7 +118,7 @@ namespace RapiMesa.Data
                 SyncQueue.Enqueue(new UpdateRowOp("Product", row1, values));
 
                 // Append History: salida negativa
-                var histValues = new object[] { nextHistId++, it.ProductId, -it.Quantity, nowIso };
+                var histValues = new object[] { nextHistId++, it.ProductId, -it.Quantity, timestampIso };
                 SyncQueue.Enqueue(new AppendOp("History", histValues));
             }
             SheetsRepo.Invalidate("Product");
@@ -142,7 +142,6 @@ namespace RapiMesa.Data
 
             // 6) Líneas Orders (enqueue). Calculamos nextId local y agregamos Date para tus gráficos.
             int nextOrderId = ordersDt.AsEnumerable().Select(r => ToInt(r["Id"])).DefaultIfEmpty(0).Max() + 1;
-            string orderDateIso = currentDate.ToString("yyyy-MM-dd HH:mm:ss");
 
             foreach (var it in items)
             {
@@ -153,7 +152,7 @@ namespace RapiMesa.Data
                     it.Name,
                     it.Price,
                     it.Quantity,
-                    orderDateIso  // <-- agrega Date en Orders (asegurate que la hoja tenga esta 6ta columna)
+                    timestampIso  // <-- agrega Date en Orders (asegurate que la hoja tenga esta 6ta columna)
                 };
                 SyncQueue.Enqueue(new AppendOp("Orders", ordValues));
             }

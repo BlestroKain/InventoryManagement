@@ -29,9 +29,9 @@ namespace RapiMesa.Views.Dashboard
             ThemeManager.ApplyTheme(this);
 
             // Rango
-            btn7d.Click += (s, e) => { _range = TimeRange.Last7; RefreshSalesChart(); };
-            btn30d.Click += (s, e) => { _range = TimeRange.Last30; RefreshSalesChart(); };
-            btnMes.Click += (s, e) => { _range = TimeRange.ThisMonth; RefreshSalesChart(); };
+            btn7d.Click += (s, e) => { _range = TimeRange.Last7; RefreshCharts(); };
+            btn30d.Click += (s, e) => { _range = TimeRange.Last30; RefreshCharts(); };
+            btnMes.Click += (s, e) => { _range = TimeRange.ThisMonth; RefreshCharts(); };
 
             // Refresh
             btnRefresh.Click += async (s, e) => await LoadStatsAsync(force: true);
@@ -112,7 +112,8 @@ namespace RapiMesa.Views.Dashboard
                 decimal avgTicket = transTodayCount > 0 ? salesToday / transTodayCount : 0m;
                 int lowStockCount = CountLowStock(_pDt, 5);
                 decimal invValue = InventoryValue(_pDt);
-                var (topName, topQty) = TopProductByQty(_oDt, today.AddDays(-30), today);
+                var (fromRange, toRange) = GetRangeBounds();
+                var (topName, topQty) = TopProductByQty(_oDt, fromRange, toRange);
 
                 lblSalesToday.Text = Money(salesToday);
                 lblSalesMonth.Text = Money(salesMonth);
@@ -122,8 +123,7 @@ namespace RapiMesa.Views.Dashboard
                 lblTopProduct.Text = topName == null ? "—" : $"{topName} ({topQty})";
 
                 // Charts
-                RefreshSalesChart();
-                RefreshTop5Chart();
+                RefreshCharts();
 
                 lblLastSync.Text = $"Última sync: {DateTime.Now:dd/MM HH:mm}";
             }
@@ -145,6 +145,31 @@ namespace RapiMesa.Views.Dashboard
             UseWaitCursor = busy;
         }
 
+        private void RefreshCharts()
+        {
+            RefreshSalesChart();
+            RefreshTop5Chart();
+        }
+
+        private (DateTime from, DateTime to) GetRangeBounds()
+        {
+            DateTime to = DateTime.Today;
+            DateTime from = to.AddDays(-6);
+            switch (_range)
+            {
+                case TimeRange.Last7:
+                    from = to.AddDays(-6);
+                    break;
+                case TimeRange.Last30:
+                    from = to.AddDays(-29);
+                    break;
+                case TimeRange.ThisMonth:
+                    from = new DateTime(to.Year, to.Month, 1);
+                    break;
+            }
+            return (from, to);
+        }
+
         // ---------- Charts ----------
 
         private void RefreshSalesChart()
@@ -158,14 +183,7 @@ namespace RapiMesa.Views.Dashboard
             ca.AxisY.LabelStyle.Format = "#,0";
             ca.AxisX.Interval = 1;
 
-            DateTime to = DateTime.Today, from;
-            switch (_range)
-            {
-                case TimeRange.Last7: from = to.AddDays(-6); break;
-                case TimeRange.Last30: from = to.AddDays(-29); break;
-                case TimeRange.ThisMonth: from = new DateTime(to.Year, to.Month, 1); break;
-                default: from = to.AddDays(-6); break;
-            }
+            var (from, to) = GetRangeBounds();
 
             // suma por día
             var perDay = new SortedDictionary<DateTime, decimal>();
@@ -186,56 +204,41 @@ namespace RapiMesa.Views.Dashboard
             foreach (var kv in perDay)
                 s.Points.AddXY(kv.Key.ToString("dd/MM"), kv.Value);
         }
-
         private void RefreshTop5Chart()
         {
             chartTop5.Series.Clear();
             var s = chartTop5.Series.Add("Qty");
-            s.ChartType = SeriesChartType.Bar;
+            s.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Bar;
             s.ToolTip = "#VALX: #VAL";
             chartTop5.Legends.Clear();
 
             var ca = chartTop5.ChartAreas[0];
             ca.AxisX.MajorGrid.Enabled = false;
             ca.AxisY.MajorGrid.Enabled = false;
+            ca.AxisY.IsReversed = true; // el mayor arriba
 
-            // opcional: que el mayor quede arriba
-            ca.AxisY.IsReversed = true;
+            if (_oDt == null || _oDt.Rows.Count == 0) return;
 
-            var from = DateTime.Today.AddDays(-30);
-            var to = DateTime.Today;
-
-            var dict = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-
-            if (_oDt != null)
-            {
-                foreach (DataRow r in _oDt.Rows)
+            // SUMA TODO el historial por Name (ignora fechas)
+            var top = _oDt.AsEnumerable()
+                .GroupBy(r => (r["Name"]?.ToString() ?? "").Trim(),
+                         StringComparer.OrdinalIgnoreCase)
+                .Select(g => new
                 {
-                    DateTime dt = DateTime.MinValue;
+                    Name = g.Key,
+                    Qty = g.Sum(x => SafeInt(x["Quantity"])),
+                    Cnt = g.Count() // apariciones (opcional)
+                })
+                .Where(x => !string.IsNullOrEmpty(x.Name) && x.Qty > 0)
+                .OrderByDescending(x => x.Qty)         // o .ThenByDescending(x => x.Cnt)
+                .Take(5)
+                .ToList();
 
-                    if (r.Table.Columns.Contains("Date"))
-                        dt = ParseDate(r["Date"]);
+            foreach (var item in top)
+                s.Points.AddXY(item.Name, item.Qty);
 
-                    if (dt == DateTime.MinValue)
-                    {
-                        var tid = (r["TransactionId"]?.ToString() ?? "").Trim();
-                        if (string.IsNullOrEmpty(tid) || _transDateMap == null || !_transDateMap.TryGetValue(tid, out dt))
-                            continue;
-                    }
-
-                    if (dt < from || dt > to) continue;
-
-                    var name = (r["Name"]?.ToString() ?? "").Trim();
-                    int qty = SafeInt(r["Quantity"]);
-
-                    if (!dict.ContainsKey(name)) dict[name] = 0;
-                    dict[name] += qty;
-                }
-            }
-
-            // agrega en orden DESC directo (sin Reverse)
-            foreach (var kv in dict.OrderByDescending(x => x.Value).Take(5))
-                s.Points.AddXY(kv.Key, kv.Value);
+            // Tarjeta “Top Product”
+            lblTopProduct.Text = top.Count > 0 ? $"{top[0].Name} ({top[0].Qty})" : "—";
         }
 
         // ---------- Helpers de UI ----------
@@ -330,16 +333,21 @@ namespace RapiMesa.Views.Dashboard
             return acc;
         }
 
+        private static bool HasColumn(DataTable dt, string name) =>
+            dt?.Columns.Cast<DataColumn>()
+                   .Any(c => c.ColumnName.Equals(name, StringComparison.OrdinalIgnoreCase)) == true;
+
         private (string name, int qty) TopProductByQty(DataTable orders, DateTime from, DateTime to)
         {
             if (orders == null) return (null, 0);
 
             var dict = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            bool hasDate = HasColumn(orders, "Date");
 
             foreach (DataRow r in orders.Rows)
             {
                 DateTime dt = DateTime.MinValue;
-                if (orders.Columns.Contains("Date"))
+                if (hasDate)
                     dt = ParseDate(r["Date"]);
 
                 if (dt == DateTime.MinValue)
@@ -400,6 +408,49 @@ namespace RapiMesa.Views.Dashboard
                 return DateTime.FromOADate(serial);
 
             return DateTime.MinValue;
+        }
+        private DateTime GetOrderDate(DataRow r)
+        {
+            // 1) si Orders trae Date y es válida, úsala
+            if (HasColumn(_oDt, "Date"))
+            {
+                var d = ParseDate(r["Date"]);
+                if (d != DateTime.MinValue) return d;
+            }
+
+            // 2) si no, usa TransactionId -> Date desde el mapa
+            var tid = (r["TransactionId"]?.ToString() ?? "").Trim();
+            if (!string.IsNullOrEmpty(tid) && _transDateMap != null &&
+                _transDateMap.TryGetValue(tid, out var dt))
+                return dt;
+
+            return DateTime.MinValue;
+        }
+        private List<(string Name, int Qty)> ComputeTopProducts(DateTime from, DateTime to, int topN = 5)
+        {
+            var dict = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            if (_oDt == null) return new List<(string, int)>();
+
+            foreach (DataRow r in _oDt.Rows)
+            {
+                var dt = GetOrderDate(r);
+                if (dt == DateTime.MinValue || dt < from || dt > to) continue;
+
+                // Normaliza nombre para evitar duplicados por espacios/casos
+                var name = (r["Name"]?.ToString() ?? "").Trim();
+                if (string.IsNullOrEmpty(name)) continue;
+
+                int qty = SafeInt(r["Quantity"]);
+                if (qty <= 0) continue;
+
+                dict[name] = dict.TryGetValue(name, out var acc) ? acc + qty : qty;
+            }
+
+            return dict
+                .OrderByDescending(kv => kv.Value)
+                .Take(topN)
+                .Select(kv => (kv.Key, kv.Value))
+                .ToList();
         }
 
         private static string Money(decimal v) =>
