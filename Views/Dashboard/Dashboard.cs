@@ -207,14 +207,22 @@ namespace RapiMesa.Views.Dashboard
 
             var dict = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 
-            if (_oDt != null && _transDateMap != null)
+            if (_oDt != null)
             {
                 foreach (DataRow r in _oDt.Rows)
                 {
-                    var tid = (r["TransactionId"]?.ToString() ?? "").Trim();
-                    if (string.IsNullOrEmpty(tid)) continue;
+                    DateTime dt = DateTime.MinValue;
 
-                    if (!_transDateMap.TryGetValue(tid, out var dt)) continue;
+                    if (r.Table.Columns.Contains("Date"))
+                        dt = ParseDate(r["Date"]);
+
+                    if (dt == DateTime.MinValue)
+                    {
+                        var tid = (r["TransactionId"]?.ToString() ?? "").Trim();
+                        if (string.IsNullOrEmpty(tid) || _transDateMap == null || !_transDateMap.TryGetValue(tid, out dt))
+                            continue;
+                    }
+
                     if (dt < from || dt > to) continue;
 
                     var name = (r["Name"]?.ToString() ?? "").Trim();
@@ -324,16 +332,23 @@ namespace RapiMesa.Views.Dashboard
 
         private (string name, int qty) TopProductByQty(DataTable orders, DateTime from, DateTime to)
         {
-            if (orders == null || _transDateMap == null) return (null, 0);
+            if (orders == null) return (null, 0);
 
             var dict = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 
             foreach (DataRow r in orders.Rows)
             {
-                var tid = (r["TransactionId"]?.ToString() ?? "").Trim();
-                if (string.IsNullOrEmpty(tid)) continue;
+                DateTime dt = DateTime.MinValue;
+                if (orders.Columns.Contains("Date"))
+                    dt = ParseDate(r["Date"]);
 
-                if (!_transDateMap.TryGetValue(tid, out var dt)) continue;
+                if (dt == DateTime.MinValue)
+                {
+                    var tid = (r["TransactionId"]?.ToString() ?? "").Trim();
+                    if (string.IsNullOrEmpty(tid) || _transDateMap == null || !_transDateMap.TryGetValue(tid, out dt))
+                        continue;
+                }
+
                 if (dt < from || dt > to) continue;
 
                 var name = (r["Name"]?.ToString() ?? "").Trim();
